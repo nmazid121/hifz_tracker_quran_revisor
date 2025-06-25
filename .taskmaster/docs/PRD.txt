@@ -1,0 +1,95 @@
+# Overview
+Hifz Tracker is a web application designed to help Quran memorizers efficiently track, review, and improve their memorization progress. It replaces manual tracking methods with a digital platform, enabling users to log recitation sessions, mark mistakes, rate performance, and visualize progress. The MVP targets single users, focusing on the Indopak 15-line Mushaf, and leverages the Quranic Universal Library (QUL) for dynamic Mushaf rendering.
+
+# Core Features
+- **Dynamic Mushaf Page Display**
+  - Renders Mushaf pages using QUL SQLite databases (layout and word data).
+  - Users can navigate by page, Juz, or Surah (like Quran Explorer).
+  - "Reveal" button toggles visibility of page content for self-testing.
+  - Each word is rendered as a clickable span for mistake marking (underline on click).
+- **Manual Mistake Logging**
+  - Users can mark/unmark individual words as mistakes during recitation review.
+  - Marked mistakes are stored per session.
+- **Recitation Rating & Notes**
+  - After each session, users rate their recitation ("Perfect", "Good", "Okay", "Bad", "Rememorize") with clear criteria.
+  - Users can add free-form notes for each session.
+- **Audio Recording & Playback**
+  - Users can record their recitation (up to 4–5 minutes) and play it back for self-review.
+  - Audio is stored locally and not persisted long-term.
+- **Progress Dashboard**
+  - Separate page displaying all recitation sessions in a spreadsheet-like table (see provided screenshot).
+  - Columns: Page Number, Juz, Surah, Last Revision Date, Rating (color-coded), Fixed it Date, Prev Rating, Notes.
+  - Supports export/import (CSV/Excel).
+
+# User Experience
+- **Personas**: Quran memorizers (Huffaz, students, teachers) seeking a digital tool for personal Hifz management.
+- **Key Flows**:
+  - Navigate to a Mushaf page (by page/Juz/Surah)
+  - Practice recitation (initially hidden, then revealed)
+  - Record audio (optional)
+  - Mark mistakes by clicking words
+  - Rate session, add notes, and submit
+  - View/edit progress in dashboard
+- **UI/UX Considerations**:
+  - Mimic [quran-revisor.app/revision](https://www.quran-revisor.app/revision) for Mushaf view
+  - Dashboard closely follows provided spreadsheet
+  - Intuitive, minimal, and responsive design (desktop-first, mobile-friendly)
+  - Underline for mistake marking, color-coded ratings
+
+# Technical Architecture
+- **Frontend**: React (with Vite), custom CSS (optionally Tailwind), QUL font for Mushaf rendering
+- **Backend**: Python Flask API
+- **Databases**:
+  - QUL SQLite files for Quranic layout/words (read-only)
+  - Separate SQLite (hifz_tracker.db) for user recitation data
+- **APIs**:
+  - `GET /api/quran/page/<page_number>`: Returns page layout and word data
+  - `POST /api/recitations`: Saves recitation session (page, rating, mistakes, notes)
+  - `GET /api/recitations`: Returns all recitation records
+- **Audio**: MediaRecorder API, local storage only
+- **Export/Import**: CSV/Excel for dashboard data
+- **Font**: Indopak Nastaleeq (from QUL)
+
+# Development Roadmap
+- **MVP Requirements**:
+  1. Mushaf rendering with QUL data, navigation (page/Juz/Surah), and reveal feature
+  2. Mistake marking (underline on click)
+  3. Audio recording/playback (local only)
+  4. Recitation rating, notes, and session submission
+  5. Progress dashboard (spreadsheet view, color-coded ratings, export/import)
+- **Future Enhancements**:
+  - User authentication and cloud sync
+  - Multi-user support
+  - AI-driven recitation analysis (e.g., Tarteel integration)
+  - Advanced analytics and charts
+  - Mobile app
+  - Search functionality
+  - Professional Qari comparison
+
+# Logical Dependency Chain
+- Foundation: QUL data integration and Mushaf rendering
+- Next: Navigation, reveal, and mistake marking
+- Then: Audio recording/playback
+- Then: Rating, notes, and session submission
+- Finally: Progress dashboard and export/import
+- Each feature is atomic and can be iteratively improved
+
+# Risks and Mitigations
+- **QUL Data Integration**: Complexity in parsing/serving QUL SQLite data. Mitigation: Use robust, well-documented libraries and test with real data early.
+- **Audio Handling**: Browser compatibility and storage. Mitigation: Use standard MediaRecorder API, limit duration, and provide clear UI feedback.
+- **UI/UX Fidelity**: Matching quran-revisor.app and spreadsheet. Mitigation: UI-first development, frequent user feedback, and reference designs.
+- **Data Loss**: Local storage only for MVP. Mitigation: Export/import feature for backup.
+- **Scalability**: MVP is single-user/local. Mitigation: Design backend with future cloud migration in mind.
+
+# Appendix
+- **References**:
+  - [quran-revisor.app/revision](https://www.quran-revisor.app/revision)
+  - Provided spreadsheet screenshot
+  - QUL database/file structure
+- **Technical Specs**:
+  - QUL `pages` and `words` table schemas
+  - Recitation data schema: id, page_number, surah_name, juz, recitation_date, rating, manual_mistakes (JSON), notes, fixed_it_date, prev_rating
+- **Rating Criteria**:
+  - Perfect: 0 mistakes, no hesitations, "water-smooth"
+  - Good: Minor stutter/hesitation, needs targeted revision
+  - Okay/Bad/Rememorize: Major mistakes, forgotten ayahs, needs focused revision 

@@ -1,0 +1,498 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Structure and Environment",
+        "description": "Initialize the project repository with React (Vite) frontend and Python Flask backend. Configure development environment with necessary dependencies.",
+        "details": "1. Create project repository with frontend and backend directories\n2. Frontend setup:\n   - Initialize Vite with React: `npm create vite@latest frontend -- --template react`\n   - Install dependencies: `npm install`\n   - Setup CSS structure (or install Tailwind if preferred)\n   - Configure proxy for API calls to backend\n3. Backend setup:\n   - Create virtual environment: `python -m venv venv`\n   - Install Flask: `pip install flask flask-cors`\n   - Create basic app structure with routes\n   - Setup SQLite connection utilities\n4. Create README with setup instructions\n5. Configure linting and formatting tools",
+        "testStrategy": "Verify development server starts correctly for both frontend and backend. Ensure API proxy works by testing a simple endpoint. Validate that the project structure follows best practices for React and Flask applications.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement QUL Database Integration",
+        "description": "Create utilities to read and serve Quranic data from QUL SQLite databases, including page layout and word information.",
+        "details": "1. Create database utilities in Flask backend:\n   - Setup SQLite connection to QUL database files\n   - Create data models for pages and words tables\n   - Implement functions to query page data by page number, juz, and surah\n2. Create API endpoints:\n   - `GET /api/quran/page/<page_number>` - returns complete page data\n   - `GET /api/quran/juz/<juz_number>` - returns pages in a juz\n   - `GET /api/quran/surah/<surah_name>` - returns pages in a surah\n3. Implement caching mechanism for frequently accessed pages\n4. Add error handling for missing data or database connection issues\n5. Create data transformation functions to format database results for frontend consumption",
+        "testStrategy": "Test API endpoints with various inputs (page numbers, juz numbers, surah names). Verify correct data is returned in expected format. Test edge cases like first/last page, invalid inputs. Measure and optimize query performance.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Database Connection and Models",
+            "description": "Establish connection to the QUL database and create data models for Quranic content",
+            "dependencies": [],
+            "details": "Technical Requirements:\n- Configure database connection parameters for QUL database\n- Create ORM models for Quranic entities (verses, chapters, juz, pages)\n- Implement relationship mappings between entities\n- Create repository layer for database operations\n\nExpected Outputs:\n- Database configuration module\n- Entity models with proper relationships\n- Repository classes with basic CRUD operations\n- Connection pooling implementation\n\nTesting Approach:\n- Unit tests for model validation\n- Integration tests for database connectivity\n- Test database seeding scripts\n- Connection pool stress testing",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "API Endpoints for Page/Juz/Surah Data",
+            "description": "Develop REST API endpoints to retrieve Quranic data by page, juz, and surah",
+            "dependencies": [
+              1
+            ],
+            "details": "Technical Requirements:\n- Create RESTful endpoints for retrieving page data\n- Implement endpoints for juz-based queries\n- Develop surah retrieval endpoints with filtering options\n- Add pagination and sorting capabilities\n\nExpected Outputs:\n- Documented API endpoints for all data types\n- Request/response DTOs for data transfer\n- Error handling middleware\n- API versioning structure\n\nTesting Approach:\n- API endpoint integration tests\n- Load testing for concurrent requests\n- Response schema validation\n- Edge case testing (invalid IDs, boundary conditions)",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Caching Implementation",
+            "description": "Implement a caching system to optimize frequently accessed Quranic data",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Technical Requirements:\n- Implement Redis/Memcached for caching frequently accessed data\n- Create cache invalidation strategies\n- Configure TTL (Time-To-Live) for different data types\n- Implement cache warming for common queries\n\nExpected Outputs:\n- Caching service layer\n- Cache hit/miss metrics collection\n- Cache invalidation triggers\n- Documentation of caching policies\n\nTesting Approach:\n- Cache performance benchmarking\n- Cache invalidation tests\n- Failover testing\n- Memory usage monitoring tests",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Data Transformation Utilities",
+            "description": "Create utility functions to transform and format Quranic data for client consumption",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Technical Requirements:\n- Develop utilities for Arabic text normalization\n- Create functions for verse metadata enrichment\n- Implement data format converters (JSON, XML, CSV)\n- Build utilities for text search and diacritics handling\n\nExpected Outputs:\n- Text processing utility library\n- Data format conversion modules\n- Search helper functions\n- Documentation of transformation utilities\n\nTesting Approach:\n- Unit tests for each utility function\n- Performance testing for large data transformations\n- Correctness validation with sample Quranic texts\n- Cross-platform output validation",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Develop Dynamic Mushaf Page Rendering",
+        "description": "Create React components to render Mushaf pages using QUL data, with proper Arabic text display and layout.",
+        "details": "1. Create MushafPage component structure:\n   - Container component for overall page layout\n   - Line component for each line of text\n   - Word component for individual words (clickable spans)\n2. Implement data fetching from backend API\n3. Add QUL Indopak Nastaleeq font integration:\n   - Include font files in project\n   - Configure CSS for proper Arabic text rendering\n4. Implement page navigation controls:\n   - Previous/Next page buttons\n   - Page number input\n   - Juz selector\n   - Surah selector\n5. Style components to match quran-revisor.app reference design\n6. Optimize rendering performance for pages with many words",
+        "testStrategy": "Test rendering with various pages to ensure correct layout and text display. Verify Arabic text renders properly with correct font. Test navigation between pages, juz, and surahs. Validate against reference design. Test on different browsers and screen sizes.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Component Hierarchy Implementation",
+            "description": "Design and implement the component structure for the Mushaf page rendering system",
+            "dependencies": [],
+            "details": "Create a modular component hierarchy including: MushafPage (container), SurahHeader, AyahContainer, AyahText, and PageFooter components. Implement proper prop drilling and context usage for data flow. Define clear interfaces for each component. Challenges include managing complex nested layouts and ensuring components are reusable across different Mushaf styles. Acceptance criteria: Components render correctly in isolation, component tree follows single responsibility principle, styling is properly encapsulated, and components are documented with storybook examples.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Data Fetching and State Management",
+            "description": "Implement data fetching logic and state management for Quranic text and metadata",
+            "dependencies": [
+              1
+            ],
+            "details": "Create API service for fetching Mushaf data (text, metadata, page information). Implement state management using React Context or Redux to handle: current page, surah/ayah data, user preferences, and loading states. Cache fetched data for performance. Challenges include handling large datasets efficiently and managing loading states gracefully. Acceptance criteria: Data loads efficiently with proper error handling, state updates don't cause unnecessary re-renders, offline support works correctly, and the implementation includes unit tests for data transformation functions.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Arabic Font Integration and Text Rendering",
+            "description": "Integrate Arabic fonts and implement specialized text rendering for Quranic text",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Integrate and optimize Arabic fonts (KFGQPC, Uthmanic, etc.) with proper font-face declarations. Implement RTL text rendering with proper Unicode handling. Create specialized components for tajweed rules visualization if needed. Handle special Quranic characters and diacritics. Challenges include ensuring consistent rendering across devices, managing font loading performance, and handling complex text positioning. Acceptance criteria: Text renders correctly on all target devices, tajweed rules display properly, font loading is optimized, and text selection works appropriately.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Navigation Controls Implementation",
+            "description": "Develop intuitive navigation controls for moving between pages, surahs, and ayahs",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement page turning controls (next/previous), surah/ayah selector, and bookmark functionality. Create a page number display and navigation input. Add keyboard shortcuts for common navigation actions. Implement smooth transitions between pages. Challenges include creating intuitive UX that works on both desktop and mobile, and ensuring navigation state is properly preserved. Acceptance criteria: Users can navigate efficiently with minimal friction, navigation state persists correctly, animations are smooth, and controls are accessible according to WCAG standards.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Performance Optimization",
+            "description": "Optimize rendering performance and resource usage for the Mushaf display",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Implement virtualization for long pages to minimize DOM nodes. Optimize font loading with proper subsetting and preloading strategies. Use React.memo and useMemo to prevent unnecessary re-renders. Implement code splitting to reduce initial bundle size. Add performance monitoring. Challenges include balancing visual fidelity with performance and handling different device capabilities. Acceptance criteria: Page renders in under 300ms on target devices, scrolling is smooth (60fps), memory usage remains stable during navigation, and Lighthouse performance score exceeds 90.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Page Reveal and Mistake Marking",
+        "description": "Add functionality to toggle visibility of Mushaf page content and allow users to mark/unmark individual words as mistakes.",
+        "details": "1. Implement reveal/hide functionality:\n   - Add toggle button to show/hide page content\n   - Create CSS transitions for smooth reveal\n   - Store visibility state in component\n2. Implement mistake marking:\n   - Make Word components clickable\n   - Toggle underline style on click\n   - Track marked words in state array\n   - Add visual indicator for marked mistakes\n3. Create utility functions:\n   - Reset all mistakes\n   - Count total mistakes\n   - Generate mistake summary\n4. Implement keyboard shortcuts for common actions\n5. Add persistence of mistake data for session submission",
+        "testStrategy": "Test reveal/hide functionality works correctly with proper animations. Verify words can be marked/unmarked as mistakes with correct visual feedback. Test mistake counting and summary generation. Ensure mistake data persists correctly for submission.",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Visibility Toggle Implementation with Animations",
+            "description": "Implement the page reveal functionality with smooth animations when toggling visibility of content.",
+            "dependencies": [],
+            "details": "UI/UX Requirements:\n- Create a toggle button/control to show/hide content\n- Implement smooth fade or slide animations for revealing/hiding content\n- Ensure animation timing feels natural (300-500ms)\n- Add visual indicators for current visibility state\n\nState Management Approach:\n- Use React useState for local visibility state\n- Consider useReducer if animation states become complex\n- Implement custom hooks for reusable animation logic\n- Store visibility preferences in context if needed across components\n\nTesting Scenarios:\n- Verify toggle works across different screen sizes\n- Test animation performance on lower-end devices\n- Ensure keyboard accessibility for toggle controls\n- Validate that animations complete properly and don't interfere with other interactions",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Word Selection and Mistake Marking System",
+            "description": "Develop functionality for users to select words and mark them as mistakes with visual indicators.",
+            "dependencies": [
+              1
+            ],
+            "details": "UI/UX Requirements:\n- Implement word selection through clicking or tapping\n- Create visual indicators for marked mistakes (highlighting, underlining, etc.)\n- Design intuitive interaction for marking/unmarking mistakes\n- Ensure selected state is clearly visible to users\n\nState Management Approach:\n- Store selected words in an array using useState or useReducer\n- Implement data structure to track word positions and mistake status\n- Use context API to share mistake data between components\n- Consider optimizing re-renders with useMemo for large text content\n\nTesting Scenarios:\n- Test selection behavior with various text lengths and formats\n- Verify correct marking/unmarking of mistakes\n- Test edge cases like rapid selections or deselections\n- Ensure mistake marking works correctly after page visibility toggles\n- Validate accessibility for screen readers",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Mistake Tracking Utilities and Keyboard Shortcuts",
+            "description": "Create utilities for tracking mistakes and implement keyboard shortcuts for improved user efficiency.",
+            "dependencies": [
+              2
+            ],
+            "details": "UI/UX Requirements:\n- Develop a mistake counter or summary display\n- Create keyboard shortcut overlay/help screen\n- Design intuitive keyboard navigation between marked mistakes\n- Implement visual feedback when using keyboard shortcuts\n\nState Management Approach:\n- Track mistake statistics in global context or Redux store\n- Use useEffect to synchronize mistake counts when changes occur\n- Implement keyboard event listeners with useEffect\n- Store user preferences for keyboard shortcuts if customizable\n\nTesting Scenarios:\n- Verify all keyboard shortcuts work as expected\n- Test mistake navigation (next/previous) functionality\n- Ensure mistake statistics update correctly\n- Test with screen readers and assistive technologies\n- Validate that keyboard shortcuts don't conflict with browser defaults\n- Test performance with large numbers of tracked mistakes",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Audio Recording and Playback",
+        "description": "Add functionality for users to record their recitation and play it back for self-review using the MediaRecorder API.",
+        "details": "1. Create AudioRecorder component:\n   - Implement MediaRecorder API integration\n   - Add record, stop, and play controls\n   - Create audio visualization during recording\n   - Add timer with 5-minute limit\n2. Implement local storage of audio:\n   - Store audio blob in memory during session\n   - Provide download option for permanent storage\n3. Add playback controls:\n   - Play/pause\n   - Seek/progress bar\n   - Volume control\n4. Implement error handling for browser compatibility issues\n5. Add clear visual indicators for recording state\n6. Optimize for mobile devices with appropriate permissions handling",
+        "testStrategy": "Test recording functionality across different browsers. Verify playback works correctly with proper controls. Test time limit enforcement. Ensure audio quality is sufficient for self-review. Test on both desktop and mobile devices with different permission scenarios.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "MediaRecorder Implementation with Basic Controls",
+            "description": "Implement core audio recording functionality using the MediaRecorder API with start, stop, and pause controls",
+            "dependencies": [],
+            "details": "Technical approach: Use navigator.mediaDevices.getUserMedia() to access the microphone stream and MediaRecorder API to capture audio. Implement UI controls for recording actions. Create visual feedback during recording (e.g., recording indicator, timer).\n\nBrowser compatibility: Check support for MediaRecorder across Chrome, Firefox, Safari, and Edge. Implement feature detection and provide graceful fallbacks for unsupported browsers. Consider using polyfills for broader compatibility.\n\nTesting requirements: Test microphone access in different browsers. Verify recording controls work as expected. Test with different audio input devices. Create unit tests for the recording logic and integration tests for the UI controls.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Audio Storage and Management",
+            "description": "Develop functionality to save, organize, and manage recorded audio files",
+            "dependencies": [
+              1
+            ],
+            "details": "Technical approach: Convert recorded audio blobs to appropriate formats (WAV, MP3). Implement local storage using IndexedDB for offline access. Create a file naming and organization system. Add metadata support (recording date, duration, tags).\n\nBrowser compatibility: Test storage limits across browsers. Ensure IndexedDB works consistently across platforms. Implement fallback storage mechanisms (localStorage with limitations) where needed.\n\nTesting requirements: Test saving and retrieving recordings of various lengths. Verify storage persistence across browser sessions. Test with limited storage conditions. Create stress tests with multiple recordings. Validate metadata integrity.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Playback Interface with Progress Tracking",
+            "description": "Create an audio playback system with timeline visualization and playback controls",
+            "dependencies": [
+              2
+            ],
+            "details": "Technical approach: Build an audio player using the Web Audio API. Implement waveform visualization of the audio. Create playback controls (play, pause, seek, speed control). Develop a progress bar with current position and duration display.\n\nBrowser compatibility: Test audio playback across browsers. Ensure visualization works consistently. Check for Web Audio API support variations. Implement simpler fallbacks for browsers with limited support.\n\nTesting requirements: Test playback of different audio formats and lengths. Verify seeking functionality works accurately. Test visualization rendering performance. Ensure playback state is maintained correctly. Test with various audio qualities and file sizes.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Mobile Optimization and Permissions Handling",
+            "description": "Optimize the recording experience for mobile devices and implement robust permissions management",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "Technical approach: Implement responsive design for mobile interfaces. Handle device orientation changes during recording. Create clear permission request flows with proper error messaging. Optimize battery usage during long recordings. Add background recording capability where supported.\n\nBrowser compatibility: Test on iOS Safari, Chrome for Android, and other mobile browsers. Handle iOS-specific audio limitations. Address permission model differences between mobile platforms. Test with various device capabilities.\n\nTesting requirements: Test on multiple mobile devices and OS versions. Verify permission flows work correctly when denied/granted. Test recording during app switching and background operation. Measure battery impact during extended recording sessions. Test with different network conditions (offline, poor connectivity).",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Create Recitation Rating and Notes UI",
+        "description": "Implement interface for users to rate their recitation performance and add notes after each session.",
+        "details": "1. Create RecitationRating component:\n   - Implement rating selection UI (Perfect, Good, Okay, Bad, Rememorize)\n   - Add color coding for different ratings\n   - Include rating criteria tooltips/explanations\n2. Create Notes component:\n   - Implement textarea for free-form notes\n   - Add character counter and reasonable limit\n   - Include placeholder text with suggestions\n3. Design session summary view:\n   - Display page information\n   - Show mistake count\n   - Preview notes and rating\n4. Implement form validation\n5. Add submission confirmation dialog\n6. Create success/error feedback for submission",
+        "testStrategy": "Test rating selection UI with all options. Verify color coding matches specifications. Test notes input with various lengths of text. Validate form submission with different combinations of ratings and notes. Test error handling for invalid submissions.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Rating Selection Component",
+            "description": "Implement a rating selection component with visual indicators and tooltips",
+            "dependencies": [],
+            "details": "Create a rating selection component that allows users to select a rating value. Include the following:\n- Visual indicators (stars, numbers, or other appropriate UI elements)\n- Tooltips that appear on hover to explain each rating level\n- Proper state management to track selected rating\n- Accessibility considerations (keyboard navigation, ARIA attributes)\n- Visual feedback when a rating is selected\n- Mobile-responsive design for touch interactions\n- Integration with form submission logic",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Notes Input with Validation",
+            "description": "Implement notes input field with validation and session summary view",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a notes input component with validation and session summary view. Include the following:\n- Text area for user notes with appropriate styling\n- Character count and/or word limit indicators\n- Form validation (required field, minimum length, etc.)\n- Error messaging for invalid inputs\n- Session summary view that displays both the rating and notes\n- State management to store and retrieve notes content\n- Integration with the rating component for a complete form submission\n- Responsive design considerations for different screen sizes",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Recitation Data Storage Backend",
+        "description": "Create backend API endpoints and database schema to store and retrieve recitation session data.",
+        "details": "1. Create SQLite database schema for recitation data:\n   - id, page_number, surah_name, juz, recitation_date, rating, manual_mistakes (JSON), notes, fixed_it_date, prev_rating\n2. Implement database migration script\n3. Create API endpoints:\n   - `POST /api/recitations` - save new recitation session\n   - `GET /api/recitations` - get all recitation records\n   - `GET /api/recitations/<id>` - get specific recitation\n   - `PUT /api/recitations/<id>` - update recitation (for fixed_it_date, prev_rating)\n   - `DELETE /api/recitations/<id>` - delete recitation\n4. Implement data validation and error handling\n5. Add sorting and filtering capabilities to GET endpoint\n6. Create database backup utility",
+        "testStrategy": "Test all API endpoints with valid and invalid data. Verify database schema correctly stores all required fields. Test data retrieval with various filters and sorting options. Validate error handling for edge cases. Test database backup and restore functionality.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Database Schema Design and Migration",
+            "description": "Design and implement the database schema for storing recitation data, and create migration scripts for schema changes.",
+            "dependencies": [],
+            "details": "Technical Requirements:\n- Design schema for storing recitation metadata (user, surah, ayah ranges, timestamps, quality metrics)\n- Create tables for users, recitations, feedback, and analytics\n- Implement relations between tables with appropriate foreign keys\n- Design indexes for optimizing common query patterns\n- Create migration scripts for initial setup and future schema changes\n- Document the schema with ER diagrams\n\nAPI Contracts:\n- Define database access layer functions\n- Document schema constraints and validation rules\n\nTesting Approach:\n- Unit tests for migration scripts\n- Test database performance with sample data\n- Validate schema constraints with edge cases\n- Test rollback procedures for migrations",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "CRUD API Endpoints Implementation",
+            "description": "Develop RESTful API endpoints for creating, reading, updating, and deleting recitation data.",
+            "dependencies": [
+              1
+            ],
+            "details": "Technical Requirements:\n- Implement endpoints for recitation upload, retrieval, update, and deletion\n- Create endpoints for user management related to recitations\n- Implement pagination and sorting for list endpoints\n- Add authentication and authorization middleware\n- Implement rate limiting for API endpoints\n- Add logging for all database operations\n\nAPI Contracts:\n- POST /recitations - Create new recitation\n- GET /recitations - List recitations with filters\n- GET /recitations/:id - Get specific recitation\n- PUT /recitations/:id - Update recitation\n- DELETE /recitations/:id - Delete recitation\n- Document request/response formats with examples\n\nTesting Approach:\n- Unit tests for each endpoint\n- Integration tests for API flows\n- Load testing for concurrent requests\n- Authentication/authorization tests\n- Error handling tests",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Data Validation, Filtering, and Backup Utilities",
+            "description": "Implement data validation logic, filtering capabilities, and automated backup systems for recitation data.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Technical Requirements:\n- Create input validation middleware for all API endpoints\n- Implement advanced filtering for recitation queries (by surah, date, quality)\n- Develop data sanitization utilities\n- Create scheduled backup system for database\n- Implement data export functionality (JSON, CSV)\n- Add data integrity checks and repair utilities\n\nAPI Contracts:\n- GET /recitations/export - Export recitation data\n- POST /admin/backup - Trigger manual backup\n- GET /recitations/search - Advanced search endpoint\n- Document validation rules and error codes\n\nTesting Approach:\n- Unit tests for validation rules\n- Test filtering with complex queries\n- Verify backup and restore functionality\n- Test data export formats\n- Performance testing for large datasets\n- Security testing for data validation",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Implement Session Submission Integration",
+        "description": "Connect frontend rating, notes, and mistake marking with backend storage to enable complete recitation session submission.",
+        "details": "1. Create SessionSubmission service:\n   - Collect data from MushafPage, AudioRecorder, and RecitationRating components\n   - Format data for API submission\n   - Handle submission to backend API\n2. Implement submission flow:\n   - Validate all required data is present\n   - Show confirmation dialog with session summary\n   - Display loading state during submission\n   - Show success/error feedback\n3. Add retry mechanism for failed submissions\n4. Implement offline support with local storage queue\n5. Create session history navigation\n6. Add option to continue previous session",
+        "testStrategy": "Test end-to-end submission flow with various combinations of data. Verify all data is correctly saved to the database. Test error handling and retry mechanism. Validate offline support by disabling network and verifying data is queued and submitted when connection is restored.",
+        "priority": "high",
+        "dependencies": [
+          4,
+          6,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Data Collection and Formatting Service",
+            "description": "Create a service to collect, validate, and format session data before submission",
+            "dependencies": [],
+            "details": "Technical Approach: Implement a SessionDataService that handles data collection from various input sources, performs initial validation, and formats data according to API requirements. Use TypeScript interfaces for data models and implement transformation functions.\n\nError Handling: Implement field-level validation with descriptive error messages. Add data sanitization to prevent malformed inputs. Create recovery mechanisms for partially completed forms.\n\nTesting Scenarios: Unit tests for data transformation functions, validation logic tests with valid/invalid inputs, integration tests with mock form submissions, and boundary testing for all input fields.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Submission Flow with Validation and Feedback",
+            "description": "Develop the end-to-end submission process with comprehensive validation and user feedback",
+            "dependencies": [
+              1
+            ],
+            "details": "Technical Approach: Create a SubmissionController that orchestrates the submission process, including pre-submission validation, API communication, and response handling. Implement a feedback system using toast notifications or inline messages. Add loading states and progress indicators.\n\nError Handling: Implement API error handling with retry logic, validation error aggregation and display, and graceful degradation for network issues. Create user-friendly error messages mapped from technical errors.\n\nTesting Scenarios: E2E tests for the complete submission flow, API integration tests with mocked responses, UI tests for feedback components, and stress testing with large data sets.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Offline Support with Queue Management",
+            "description": "Implement offline capabilities with a robust queue management system for pending submissions",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Technical Approach: Develop an OfflineQueueService using IndexedDB for storage. Implement background sync with the ServiceWorker API. Create a queue management interface for users to view/manage pending submissions. Use the NetworkInformation API to detect connectivity changes.\n\nError Handling: Implement conflict resolution for submissions made offline that conflict with server state. Add storage quota management and data expiration policies. Create recovery mechanisms for failed sync attempts.\n\nTesting Scenarios: Offline/online transition tests, queue persistence tests across page reloads, conflict resolution tests with simulated server conflicts, and storage limit tests.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Session History and Continuation Features",
+            "description": "Create functionality for viewing submission history and continuing incomplete sessions",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Technical Approach: Implement a SessionHistoryService to fetch and display past submissions. Create a session continuation mechanism that allows users to resume incomplete submissions. Add filtering and search capabilities for the history view. Implement data caching for improved performance.\n\nError Handling: Handle missing or corrupted session data with fallback mechanisms. Implement version control for session data format changes. Create data migration utilities for older session formats.\n\nTesting Scenarios: History retrieval and display tests, session continuation flow tests, cache invalidation tests, and performance testing for large history datasets.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Develop Progress Dashboard",
+        "description": "Create a spreadsheet-like dashboard to display all recitation sessions with filtering, sorting, and editing capabilities.",
+        "details": "1. Create Dashboard component:\n   - Implement table/grid layout matching provided screenshot\n   - Add columns: Page Number, Juz, Surah, Last Revision Date, Rating (color-coded), Fixed it Date, Prev Rating, Notes\n   - Implement sorting by any column\n   - Add filtering capabilities\n2. Implement data fetching from backend API\n3. Add pagination for large datasets\n4. Create inline editing for Fixed it Date and Notes\n5. Implement color coding for ratings\n6. Add row selection for bulk actions\n7. Create responsive design for different screen sizes",
+        "testStrategy": "Test dashboard rendering with various amounts of data. Verify sorting and filtering work correctly for all columns. Test inline editing functionality. Validate color coding matches specifications. Test pagination with large datasets. Verify responsive design on different screen sizes.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Table/Grid Implementation with Column Configuration",
+            "description": "Implement the core table/grid component with configurable columns for the progress dashboard",
+            "dependencies": [],
+            "details": "Create a reusable table component that supports dynamic column configuration. Implement column resizing, reordering, and visibility toggles. Define data models and interfaces for the grid structure. Set up the basic rendering pipeline with virtualization for performance with large datasets. Include column header components with appropriate styling. Implement theming support for the grid to match application design system. Add accessibility features including keyboard navigation and ARIA attributes.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Sorting and Filtering Capabilities",
+            "description": "Add sorting and filtering functionality to the progress dashboard grid",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement column sorting with multi-column sort capability. Create filter components for different data types (text, number, date, etc.). Add filter persistence and reset functionality. Optimize filter operations for performance with debouncing and memoization. Implement server-side sorting/filtering integration for large datasets. Create visual indicators for active sorts and filters. Design and implement filter panel UI with intuitive controls. Add ability to save and load filter presets.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Inline Editing Functionality",
+            "description": "Implement inline editing capabilities for grid cells in the progress dashboard",
+            "dependencies": [
+              1
+            ],
+            "details": "Create editable cell components for different data types (text, number, select, etc.). Implement edit mode toggling with appropriate UI indicators. Add validation logic for edited values with error messaging. Implement data change tracking and dirty state management. Create save/cancel mechanisms for edits with optimistic UI updates. Add keyboard shortcuts for efficient editing. Implement cell-level permissions based on user roles. Design and implement undo/redo functionality for edits.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Responsive Design and Pagination",
+            "description": "Ensure the progress dashboard is responsive across devices and implement pagination",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Implement responsive layout adjustments for different screen sizes. Create column priority system for progressive disclosure on smaller screens. Add horizontal scrolling with fixed columns for mobile views. Implement pagination controls with configurable page sizes. Add infinite scrolling option as alternative to pagination. Optimize rendering performance for mobile devices. Ensure touch-friendly controls for mobile users. Implement state persistence for pagination settings. Add loading indicators and skeleton screens during data fetching.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implement Export/Import Functionality",
+        "description": "Add capability to export dashboard data to CSV/Excel and import it back, enabling backup and transfer of recitation records.",
+        "details": "1. Create export functionality:\n   - Implement CSV generation from recitation data\n   - Add Excel export option using a library like xlsx\n   - Include all relevant fields in export\n   - Add export button to dashboard\n2. Create import functionality:\n   - Implement file upload component\n   - Add CSV/Excel parsing\n   - Validate imported data format\n   - Handle duplicate detection\n   - Show import preview and confirmation\n3. Implement progress indicator for large imports/exports\n4. Add error handling for malformed files\n5. Create documentation for import/export format",
+        "testStrategy": "Test export functionality with various amounts of data. Verify exported files contain all expected data in correct format. Test import with valid and invalid files. Validate duplicate detection and handling. Test with large datasets to ensure performance.",
+        "priority": "low",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "CSV/Excel Export Implementation",
+            "description": "Implement functionality to export data to CSV and Excel formats",
+            "dependencies": [],
+            "details": "Technical approach: Use libraries like csv-stringify for CSV and ExcelJS/xlsx for Excel exports. Create a service layer that handles data retrieval from the database and transforms it into the appropriate format. File format requirements: Support both .csv and .xlsx formats with proper headers, data types, and encoding (UTF-8). Include options for column selection and data filtering. Error handling strategy: Implement try/catch blocks around file operations, add logging for export failures, and provide user-friendly error messages for common issues like permission problems or disk space limitations.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "File Upload and Parsing for Import",
+            "description": "Create functionality to upload files and parse their contents for data import",
+            "dependencies": [],
+            "details": "Technical approach: Implement file upload using multer or similar middleware for handling multipart/form-data. Create parsers for both CSV (using csv-parse) and Excel (using ExcelJS/xlsx) formats. Build a streaming approach for large files to prevent memory issues. File format requirements: Support .csv, .xlsx, and .xls formats. Implement template validation to ensure uploaded files match expected structure. Error handling strategy: Validate file type and size before processing, provide detailed feedback on parsing errors (line numbers, column issues), and implement partial imports where possible when errors occur.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Validation, Duplicate Handling, and Progress Indicators",
+            "description": "Implement data validation, duplicate detection, and progress tracking for import operations",
+            "dependencies": [
+              2
+            ],
+            "details": "Technical approach: Create a validation pipeline that checks data types, required fields, and business rules. Implement duplicate detection using database queries or in-memory comparison. Use WebSockets or Server-Sent Events for real-time progress updates. File format requirements: Define validation rules for each field type, create a standard error report format that can be exported to users. Error handling strategy: Provide options for how to handle invalid data (skip, use default values, abort), implement transaction rollback for failed imports, and create detailed error reports showing which records failed validation and why.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-25T05:38:57.304Z",
+      "updated": "2025-06-25T06:30:30.413Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
