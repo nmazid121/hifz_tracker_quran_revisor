@@ -50,24 +50,27 @@
 
 .mushaf-text, .mushaf-page {
   font-family: 'IndopakNastaleeq', serif;
-  color: black;
+  color: #e9dcbd; /* Main Quran text color */
 }
 
 .App {
   font-family: Arial, sans-serif;
   padding: 2rem;
-  background: #f8f8f8;
+  padding-bottom: 120px; /* Add padding to prevent overlap with fixed controls bar */
+  background: #121212; /* Dark background */
   min-height: 100vh;
+  color: #EAE0C8; /* Default light text color */
+  box-sizing: border-box;
 }
 
 .mushaf-page {
   direction: rtl;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: transparent; /* Transparent background */
+  border: none; /* No border */
   margin: 2rem auto;
   padding: 2rem;
   max-width: 650px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: none; /* No shadow */
 }
 
 .mushaf-line {
@@ -76,7 +79,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  color: black;
+  color: #EAE0C8; /* Main Quran text color */
 }
 
 .mushaf-line.centered {
@@ -88,19 +91,19 @@
   padding: 0.1rem 0.3rem;
   cursor: pointer;
   transition: background 0.2s;
-  color: black;
+  color: #EAE0C8; /* Main Quran text color */
 }
 
 .surah-name {
   font-weight: bold;
   font-size: 2.2rem;
-  color: #2a7b7b;
+  color: #A4C8F5; /* Soft blue for Surah name */
   margin: 0 0.5rem;
 }
 
 .basmallah {
   font-size: 2.5rem;
-  color: #b48a1d;
+  color: #EAE0C8; /* Match Quran text color */
   margin: 0 0.5rem;
 }
 
@@ -109,6 +112,79 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  justify-content: center;
+}
+
+.nav-controls button {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+.nav-controls input {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #eee;
+  width: 50px;
+  text-align: center;
+}
+
+.controls-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #1a1a1a;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.page-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.icon-button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.icon-button.record-active {
+  color: #e53935; /* Red for active recording */
+}
+
+.timer {
+  color: #e53935;
+  font-size: 0.9em;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.audio-error {
+    color: #ef9a9a;
+    font-size: 0.8em;
 }
 
 .ayah-marker {
@@ -116,9 +192,9 @@
   font-size: 2em;
   margin: 0 0.3em;
   vertical-align: middle;
-  color: #d32f2f;
-  background: #fffbe6;
-  border-radius: 50%;
-  padding: 0.1em 0.3em;
+  color: #EAE0C8;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
   display: inline-block;
 }

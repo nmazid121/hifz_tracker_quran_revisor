@@ -1,5 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+// SVG Icons for the controls
+const MicIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+    <line x1="12" y1="19" x2="12" y2="23"></line>
+  </svg>
+);
+
+const StopIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+  </svg>
+);
+
+const PlayIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </svg>
+);
+
+const PauseIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="4" width="4" height="16"></rect>
+      <rect x="14" y="4" width="4" height="16"></rect>
+    </svg>
+  );
+
+const DownloadIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+);
+
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -21,7 +57,6 @@ const AudioRecorder = () => {
   useEffect(() => {
     if (!navigator.mediaDevices || !window.MediaRecorder) {
       setError('Audio recording is not supported in this browser');
-      return;
     }
   }, []);
 
@@ -32,69 +67,65 @@ const AudioRecorder = () => {
       streamRef.current = stream;
       setHasPermission(true);
       setError(null);
+      return stream;
     } catch (err) {
       setError('Microphone permission denied');
       setHasPermission(false);
+      return null;
     }
   };
 
   // Start recording
   const startRecording = async () => {
+    let stream = streamRef.current;
     if (!hasPermission) {
-      await requestPermission();
-      if (!hasPermission) return;
+      stream = await requestPermission();
     }
+    if (!stream) return;
 
-    try {
-      audioChunksRef.current = [];
-      setRecordingTime(0);
-      setError(null);
+    audioChunksRef.current = [];
+    setRecordingTime(0);
+    setError(null);
 
-      const stream = streamRef.current || await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+    });
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+      setAudioBlob(blob);
+      setAudioUrl(URL.createObjectURL(blob));
+      setIsRecording(false);
+      
+      // Stop all tracks to release microphone
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+
+    // Start timer
+    timerRef.current = setInterval(() => {
+      setRecordingTime(prev => {
+        if (prev >= MAX_RECORDING_TIME) {
+          stopRecording();
+          return prev;
+        }
+        return prev + 1;
       });
+    }, 1000);
 
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-        setIsRecording(false);
-        
-        // Stop all tracks to release microphone
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-
-      // Start timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => {
-          if (prev >= MAX_RECORDING_TIME) {
-            stopRecording();
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-
-    } catch (err) {
-      setError('Failed to start recording: ' + err.message);
-    }
   };
 
   // Stop recording
@@ -161,104 +192,39 @@ const AudioRecorder = () => {
   }, [audioUrl]);
 
   return (
-    <div className="audio-recorder">
-      <h3>Audio Recorder</h3>
+    <div className="audio-controls">
+      {error && <div className="audio-error">{error}</div>}
+
+      {!isRecording && !audioBlob && (
+        <button onClick={startRecording} className="icon-button" aria-label="Start recording">
+          <MicIcon />
+        </button>
+      )}
       
-      {error && (
-        <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>
-          {error}
-        </div>
+      {isRecording && (
+        <>
+          <button onClick={stopRecording} className="icon-button record-active" aria-label="Stop recording">
+            <StopIcon />
+          </button>
+          <span className="timer">{formatTime(recordingTime)}</span>
+        </>
       )}
 
-      <div className="recording-controls" style={{ marginBottom: '1rem' }}>
-        {!isRecording ? (
-          <button 
-            onClick={startRecording}
-            disabled={!hasPermission && error}
-            style={{
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {hasPermission ? 'Start Recording' : 'Request Permission'}
+      {audioBlob && !isRecording && (
+        <>
+          <button onClick={isPlaying ? pauseAudio : playAudio} className="icon-button" aria-label={isPlaying ? "Pause" : "Play"}>
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
-        ) : (
-          <button 
-            onClick={stopRecording}
-            style={{
-              backgroundColor: '#f44336',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Stop Recording
+          <button onClick={downloadAudio} className="icon-button" aria-label="Download audio">
+            <DownloadIcon />
           </button>
-        )}
-        
-        {isRecording && (
-          <span style={{ marginLeft: '1rem', color: '#f44336' }}>
-            Recording: {formatTime(recordingTime)} / {formatTime(MAX_RECORDING_TIME)}
-          </span>
-        )}
-      </div>
-
-      {audioBlob && (
-        <div className="playback-controls" style={{ marginBottom: '1rem' }}>
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            onEnded={handleAudioEnded}
-            style={{ display: 'none' }}
-          />
-          
-          <button 
-            onClick={isPlaying ? pauseAudio : playAudio}
-            style={{
-              backgroundColor: '#2196F3',
-              color: 'white',
-              padding: '8px 16px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '8px'
-            }}
-          >
-            {isPlaying ? 'Pause' : 'Play'}
+          <button onClick={startRecording} className="icon-button" aria-label="Start new recording">
+            <MicIcon />
           </button>
-          
-          <button 
-            onClick={downloadAudio}
-            style={{
-              backgroundColor: '#FF9800',
-              color: 'white',
-              padding: '8px 16px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Download
-          </button>
-          
-          <span style={{ marginLeft: '1rem', fontSize: '0.9em', color: '#666' }}>
-            Duration: {formatTime(Math.floor(audioBlob.size / 1000))} | 
-            Size: {(audioBlob.size / 1024 / 1024).toFixed(2)} MB
-          </span>
-        </div>
+        </>
       )}
 
-      <div className="recording-info" style={{ fontSize: '0.9em', color: '#666' }}>
-        <p>• Maximum recording time: 5 minutes</p>
-        <p>• Audio is stored locally and not uploaded</p>
-        <p>• Use the download button to save your recording</p>
-      </div>
+      {audioUrl && <audio ref={audioRef} src={audioUrl} onEnded={handleAudioEnded} style={{ display: 'none' }} />}
     </div>
   );
 };
