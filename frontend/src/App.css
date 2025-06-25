@@ -142,6 +142,54 @@
   z-index: 1000;
 }
 
+.controls-bar .left-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.controls-bar .center-section {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.controls-bar .right-section {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.controls-bar button {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #eee;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.controls-bar button:hover {
+  background-color: #3a3a3a;
+  border-color: #666;
+}
+
+.controls-bar input {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #eee;
+  width: 60px;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.controls-bar span {
+  color: #a0a0a0;
+}
+
 .page-nav {
   display: flex;
   align-items: center;

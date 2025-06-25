@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import MushafPage from './components/MushafPage';
 import ControlsBar from './components/ControlsBar';
-import MushafControls from './components/MushafControls';
 import './App.css';
 
 const MIN_PAGE = 1;
@@ -43,12 +42,6 @@ function App() {
 
   return (
     <div className="App">
-      <MushafControls
-        mistakes={mistakes}
-        resetMistakes={resetMistakes}
-        toggleMushaf={toggleMushaf}
-        showMushaf={showMushaf}
-      />
       {showMushaf && <MushafPage pageNumber={page} />}
       <ControlsBar
         page={page}
@@ -59,6 +52,10 @@ function App() {
         handleInputChange={handleInputChange}
         handleInputBlur={handleInputBlur}
         handleInputKeyDown={handleInputKeyDown}
+        mistakes={mistakes}
+        resetMistakes={resetMistakes}
+        toggleMushaf={toggleMushaf}
+        showMushaf={showMushaf}
       />
     </div>
   );
