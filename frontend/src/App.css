@@ -54,7 +54,7 @@
 }
 
 .App {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   padding: 2rem;
   padding-bottom: 120px; /* Add padding to prevent overlap with fixed controls bar */
   background: #121212; /* Dark background */
@@ -197,4 +197,39 @@
   border-radius: 0;
   padding: 0;
   display: inline-block;
+}
+
+.mushaf-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #a0a0a0;
+}
+
+.mushaf-controls button, .mushaf-controls span {
+  font-family: inherit;
+}
+
+.mushaf-controls .summary-section,
+.mushaf-controls .actions-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mushaf-controls button {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #eee;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.mushaf-controls button:hover {
+  background-color: #3a3a3a;
+  border-color: #666;
 }
