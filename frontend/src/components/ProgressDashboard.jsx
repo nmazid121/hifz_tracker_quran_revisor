@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import sessionSubmissionService from '../services/SessionSubmissionService';
 
 const ProgressDashboard = ({ onClose }) => {
@@ -28,22 +28,24 @@ const ProgressDashboard = ({ onClose }) => {
     'Rememorize': '#8b5cf6'
   };
 
-  // Load data
-  useEffect(() => {
-    loadRecitations();
-  }, [filters]);
-
-  const loadRecitations = async () => {
+  // Load data - stabilized with useCallback
+  const loadRecitations = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
       const result = await sessionSubmissionService.fetchRecitations(filters);
       setRecitations(result.recitations || []);
     } catch (error) {
+      console.error('Error loading recitations:', error);
       setError('Failed to load recitations: ' + error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    loadRecitations();
+  }, [loadRecitations]);
 
   // Sorting
   const sortedData = useMemo(() => {
@@ -70,24 +72,24 @@ const ProgressDashboard = ({ onClose }) => {
 
   const totalPages = Math.ceil(sortedData.length / pageSize);
 
-  const handleSort = (key) => {
+  const handleSort = useCallback((key) => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
-  };
+  }, []);
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = useCallback((key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleEdit = (rowId, column, currentValue) => {
+  const handleEdit = useCallback((rowId, column, currentValue) => {
     setEditingCell({ rowId, column });
     setEditValue(currentValue || '');
-  };
+  }, []);
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!editingCell) return;
 
     try {
@@ -114,45 +116,45 @@ const ProgressDashboard = ({ onClose }) => {
     } catch (error) {
       setError('Failed to update recitation: ' + error.message);
     }
-  };
+  }, [editingCell, editValue]);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingCell(null);
     setEditValue('');
-  };
+  }, []);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter') {
       handleSaveEdit();
     } else if (e.key === 'Escape') {
       handleCancelEdit();
     }
-  };
+  }, [handleSaveEdit, handleCancelEdit]);
 
-  const toggleRowSelection = (id) => {
+  const toggleRowSelection = useCallback((id) => {
     setSelectedRows(prev => 
       prev.includes(id) 
         ? prev.filter(rowId => rowId !== id)
         : [...prev, id]
     );
-  };
+  }, []);
 
-  const selectAllRows = () => {
+  const selectAllRows = useCallback(() => {
     const allIds = paginatedData.map(rec => rec.id);
     setSelectedRows(prev => 
       prev.length === allIds.length ? [] : allIds
     );
-  };
+  }, [paginatedData]);
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
-  };
+  }, []);
 
-  const getSortIcon = (key) => {
+  const getSortIcon = useCallback((key) => {
     if (sortConfig.key !== key) return '↕️';
     return sortConfig.direction === 'asc' ? '↑' : '↓';
-  };
+  }, [sortConfig]);
 
   const renderEditableCell = (record, column, value) => {
     const isEditing = editingCell?.rowId === record.id && editingCell?.column === column;

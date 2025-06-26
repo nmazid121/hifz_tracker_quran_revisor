@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 const MushafPage = ({ pageNumber, onMistakesChange }) => {
   const [pageData, setPageData] = useState(null);
@@ -12,53 +12,74 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
   // Utility: generate mistake summary (comma-separated word IDs)
   const mistakeSummary = mistakes.join(', ');
 
+  // Stable callback for onMistakesChange
+  const stableOnMistakesChange = useCallback((newMistakes) => {
+    if (onMistakesChange) {
+      onMistakesChange(newMistakes);
+    }
+  }, [onMistakesChange]);
+
   // Persist mistakes in sessionStorage per page
   useEffect(() => {
     if (pageData) {
       sessionStorage.setItem(`mistakes_page_${pageNumber}`, JSON.stringify(mistakes));
-      // Notify parent component about mistakes change
-      if (onMistakesChange) {
-        onMistakesChange(mistakes);
-      }
+      stableOnMistakesChange(mistakes);
     }
-  }, [mistakes, pageNumber, pageData, onMistakesChange]);
+  }, [mistakes, pageNumber, pageData, stableOnMistakesChange]);
 
-  // Restore mistakes on page load
+  // Restore mistakes on page load - ONLY when pageNumber changes
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(`/api/quran/page/${pageNumber}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPageData(data);
-        setLoading(false);
-        const saved = sessionStorage.getItem(`mistakes_page_${pageNumber}`);
-        const savedMistakes = saved ? JSON.parse(saved) : [];
-        setMistakes(savedMistakes);
-        setRevealed(false); // hide page on page change
-        
-        // Notify parent component about initial mistakes
-        if (onMistakesChange) {
-          onMistakesChange(savedMistakes);
+    let isCancelled = false;
+    
+    const loadPageData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`/api/quran/page/${pageNumber}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-      })
-      .catch((err) => {
-        setError('Failed to load page data');
-        setLoading(false);
-      });
-  }, [pageNumber, onMistakesChange]);
+        
+        const data = await response.json();
+        
+        if (!isCancelled) {
+          setPageData(data);
+          setLoading(false);
+          const saved = sessionStorage.getItem(`mistakes_page_${pageNumber}`);
+          const savedMistakes = saved ? JSON.parse(saved) : [];
+          setMistakes(savedMistakes);
+          setRevealed(false); // hide page on page change
+          
+          // Notify parent component about initial mistakes
+          stableOnMistakesChange(savedMistakes);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setError('Failed to load page data');
+          setLoading(false);
+        }
+      }
+    };
 
-  const toggleReveal = () => setRevealed((r) => !r);
+    loadPageData();
 
-  const toggleMistake = (wordId) => {
+    return () => {
+      isCancelled = true;
+    };
+  }, [pageNumber]); // Only depend on pageNumber
+
+  const toggleReveal = useCallback(() => setRevealed((r) => !r), []);
+
+  const toggleMistake = useCallback((wordId) => {
     setMistakes((prev) =>
       prev.includes(wordId)
         ? prev.filter((id) => id !== wordId)
         : [...prev, wordId]
     );
-  };
+  }, []);
 
-  const resetMistakes = () => setMistakes([]);
+  const resetMistakes = useCallback(() => setMistakes([]), []);
 
   // Keyboard shortcuts: R to reveal/hide, M to reset mistakes
   useEffect(() => {
@@ -71,7 +92,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [toggleReveal, resetMistakes]);
 
   // Expose methods to parent component
   useEffect(() => {
@@ -86,7 +107,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
     return () => {
       delete window.mushafPageMethods;
     };
-  }, [mistakes, revealed]);
+  }, [mistakes, revealed, resetMistakes, toggleReveal]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;

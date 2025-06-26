@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import MushafPage from './components/MushafPage';
 import ControlsBar from './components/ControlsBar';
 import RecitationRating from './components/RecitationRating';
@@ -23,77 +23,84 @@ function App() {
   // Ref to access audio recorder data if needed
   const audioRecorderRef = useRef(null);
 
-  const goToPage = (num) => {
+  const goToPage = useCallback((num) => {
     const n = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(num)));
     setPage(n);
     setInput(String(n));
     setShowRating(false); // Hide rating when changing pages
     setShowDashboard(false); // Hide dashboard when changing pages
-    clearSubmitMessage();
-  };
+    setSubmitMessage('');
+    setSubmitMessageType('');
+  }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     setInput(e.target.value);
-  };
+  }, []);
 
-  const handleInputBlur = () => {
+  const handleInputBlur = useCallback(() => {
     goToPage(input);
-  };
+  }, [goToPage, input]);
 
-  const handleInputKeyDown = (e) => {
+  const handleInputKeyDown = useCallback((e) => {
     if (e.key === 'Enter') {
       goToPage(input);
     }
-  };
+  }, [goToPage, input]);
 
-  const resetMistakes = () => {
+  const resetMistakes = useCallback(() => {
     setMistakes([]);
     // Also reset mistakes in MushafPage component if available
     if (window.mushafPageMethods) {
       window.mushafPageMethods.resetMistakes();
     }
-  };
+  }, []);
 
-  const toggleMushaf = () => {
+  const toggleMushaf = useCallback(() => {
     setShowMushaf(prev => !prev);
-  };
+  }, []);
 
-  const handleMistakesChange = (newMistakes) => {
+  // Stable callback for handling mistakes changes from MushafPage
+  const handleMistakesChange = useCallback((newMistakes) => {
     setMistakes(newMistakes);
-  };
+  }, []);
 
-  const showRatingForm = () => {
+  const showRatingForm = useCallback(() => {
     setShowRating(true);
     setShowDashboard(false);
-    clearSubmitMessage();
-  };
+    setSubmitMessage('');
+    setSubmitMessageType('');
+  }, []);
 
-  const hideRatingForm = () => {
+  const hideRatingForm = useCallback(() => {
     setShowRating(false);
-    clearSubmitMessage();
-  };
+    setSubmitMessage('');
+    setSubmitMessageType('');
+  }, []);
 
-  const showProgressDashboard = () => {
+  const showProgressDashboard = useCallback(() => {
     setShowDashboard(true);
     setShowRating(false);
     setShowMushaf(false);
-    clearSubmitMessage();
-  };
-
-  const hideProgressDashboard = () => {
-    setShowDashboard(false);
-    setShowMushaf(true);
-    clearSubmitMessage();
-  };
-
-  const clearSubmitMessage = () => {
     setSubmitMessage('');
     setSubmitMessageType('');
-  };
+  }, []);
 
-  const handleSessionSubmit = async ({ rating, notes }) => {
+  const hideProgressDashboard = useCallback(() => {
+    setShowDashboard(false);
+    setShowMushaf(true);
+    setSubmitMessage('');
+    setSubmitMessageType('');
+  }, []);
+
+  const clearSubmitMessage = useCallback(() => {
+    setSubmitMessage('');
+    setSubmitMessageType('');
+  }, []);
+
+  const handleSessionSubmit = useCallback(async ({ rating, notes }) => {
     setIsSubmitting(true);
-    clearSubmitMessage();
+    setSubmitMessage('');
+    setSubmitMessageType('');
 
     try {
       // Collect session data
@@ -128,7 +135,7 @@ function App() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [page, mistakes, resetMistakes, hideRatingForm]);
 
   return (
     <div className="App">
