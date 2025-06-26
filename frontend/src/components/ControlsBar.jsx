@@ -13,41 +13,70 @@ const ControlsBar = ({
   mistakes,
   resetMistakes,
   toggleMushaf,
-  showMushaf
+  showMushaf,
+  showRating,
+  showDashboard,
+  onShowRating,
+  onHideRating,
+  onShowDashboard,
+  onHideDashboard
 }) => {
   return (
     <div className="controls-bar">
       <div className="left-section">
-        <span>(:Summary)</span>
-        <span>Mistakes: {mistakes}</span>
-        <button onClick={resetMistakes}>Reset Mistakes</button>
-        <button onClick={toggleMushaf}>
-          {showMushaf ? 'Hide Mushaf Page' : 'Reveal Mushaf Page'}
-        </button>
+        {showDashboard ? (
+          <button onClick={onHideDashboard}>
+            ← Back to Mushaf
+          </button>
+        ) : showRating ? (
+          <button onClick={onHideRating}>
+            ← Back to Mushaf
+          </button>
+        ) : (
+          <>
+            <button onClick={onShowRating}>
+              Submit Session
+            </button>
+            <button onClick={onShowDashboard}>
+              Dashboard
+            </button>
+            <span>Mistakes: {mistakes}</span>
+            <button onClick={resetMistakes}>Reset Mistakes</button>
+            <button onClick={toggleMushaf}>
+              {showMushaf ? 'Hide Mushaf Page' : 'Reveal Mushaf Page'}
+            </button>
+          </>
+        )}
       </div>
       
       <div className="center-section">
-        <div className="page-nav">
-          <button onClick={() => goToPage(page - 1)} disabled={page <= minPage}>
-            {'<<'}
-          </button>
-          <input
-            type="number"
-            min={minPage}
-            max={maxPage}
-            value={input}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            onKeyDown={handleInputKeyDown}
-          />
-          <button onClick={() => goToPage(page + 1)} disabled={page >= maxPage}>
-            {'>>'}
-          </button>
-        </div>
+        {!showDashboard && (
+          <div className="page-nav">
+            <button onClick={() => goToPage(page - 1)} disabled={page <= minPage}>
+              {'<<'}
+            </button>
+            <input
+              type="number"
+              min={minPage}
+              max={maxPage}
+              value={input}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onKeyDown={handleInputKeyDown}
+            />
+            <span>Page {page} of {maxPage}</span>
+            <button onClick={() => goToPage(page + 1)} disabled={page >= maxPage}>
+              {'>>'}
+            </button>
+          </div>
+        )}
+        {showDashboard && (
+          <span>Recitation Progress Dashboard</span>
+        )}
       </div>
       
       <div className="right-section">
-        <AudioRecorder />
+        {!showDashboard && <AudioRecorder />}
       </div>
     </div>
   );
