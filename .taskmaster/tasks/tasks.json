@@ -487,11 +487,39 @@
             "testStrategy": ""
           }
         ]
+      },
+      {
+        "id": 11,
+        "title": "UI Consolidation and Layout Fix",
+        "description": "Consolidate duplicate control bars by merging MushafControls and ControlsBar into a single bottom control bar with proper layout and consistent styling.",
+        "details": "1. Analyze and refactor existing control components:\n   - Identify all functionality in MushafControls and ControlsBar\n   - Create a unified component structure that preserves all features\n   - Remove duplicate code and consolidate state management\n\n2. Implement new layout structure:\n   - Create a three-section layout for the bottom control bar:\n     - Left section: Summary button, Mistakes counter, control buttons\n     - Center section: Page navigation controls\n     - Right section: Audio controls\n   - Use CSS Grid or Flexbox for responsive positioning\n   - Ensure proper spacing between elements with consistent margins/padding\n\n3. Apply consistent dark theme styling:\n   - Define a common color palette for all UI elements\n   - Standardize button styles, fonts, and spacing\n   - Implement consistent hover and active states\n   - Ensure proper contrast ratios for accessibility\n\n4. Ensure responsive behavior:\n   - Test layout at different viewport sizes\n   - Implement breakpoints for mobile/tablet/desktop\n   - Ensure controls remain accessible on smaller screens\n   - Consider collapsing sections into menus on very small screens\n\n5. Refactor component integration:\n   - Update parent components to use the new consolidated control bar\n   - Ensure all event handlers and state updates work correctly\n   - Maintain backward compatibility with existing features\n   - Document the new component structure for future developers",
+        "testStrategy": "1. Visual inspection:\n   - Verify the control bar appears at the bottom with correct three-section layout\n   - Confirm all controls are visible and properly aligned\n   - Check that dark theme styling is consistently applied\n   - Ensure proper spacing between all elements\n\n2. Functionality testing:\n   - Test each control to verify it performs its intended function\n   - Verify page navigation controls work correctly\n   - Test audio controls for proper playback functionality\n   - Confirm mistake counter displays accurate information\n   - Verify summary button opens the correct view\n\n3. Responsive design testing:\n   - Test on multiple devices (desktop, tablet, mobile)\n   - Verify layout adjusts appropriately at different viewport sizes\n   - Ensure all controls remain accessible on smaller screens\n   - Check touch targets are appropriately sized for mobile\n\n4. Integration testing:\n   - Verify the control bar works correctly with other components\n   - Test interactions between controls and page content\n   - Ensure state changes are properly reflected in the UI\n   - Confirm no regressions in existing functionality\n\n5. Cross-browser testing:\n   - Test in Chrome, Firefox, Safari, and Edge\n   - Verify consistent appearance and behavior across browsers",
+        "status": "done",
+        "dependencies": [
+          4,
+          5
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "UI Layout Fix: Consolidate Duplicate Control Bars",
+        "description": "Merge MushafControls and ControlsBar components into a single unified bottom control bar with consistent styling and proper layout organization.",
+        "details": "1. Analyze existing control components:\n   - Review MushafControls and ControlsBar components to identify all functionality\n   - Document all props, state management, and event handlers in both components\n   - Identify overlapping functionality and opportunities for consolidation\n\n2. Design unified component architecture:\n   - Create a new UnifiedControlBar component that will replace both existing components\n   - Define a clear component hierarchy with smaller sub-components for maintainability\n   - Establish consistent prop interfaces for all sub-components\n\n3. Implement three-section layout structure:\n   - Left section: Summary button, Mistakes counter, control buttons\n   - Center section: Page navigation controls\n   - Right section: Audio controls, settings, and additional actions\n   - Use CSS Grid or Flexbox for responsive positioning\n\n4. Refactor state management:\n   - Consolidate duplicate state variables across components\n   - Implement proper state lifting where needed\n   - Use context API for global state if appropriate\n\n5. Apply consistent styling:\n   - Ensure all controls follow the same design language\n   - Implement proper spacing between elements (16px between sections, 8px between elements)\n   - Support both light and dark theme variants\n   - Make sure all interactive elements have proper hover/focus states\n\n6. Ensure responsive behavior:\n   - Implement collapsible sections for smaller screen sizes\n   - Create mobile-optimized layout that maintains all functionality\n   - Test across various device sizes\n\n7. Optimize performance:\n   - Use React.memo for pure components\n   - Implement proper callback memoization with useCallback\n   - Avoid unnecessary re-renders",
+        "testStrategy": "1. Component testing:\n   - Write unit tests for the new UnifiedControlBar component\n   - Test all sub-components individually\n   - Verify proper prop passing and event handling\n   - Test state management and updates\n\n2. Visual verification:\n   - Verify the control bar appears at the bottom with correct three-section layout\n   - Confirm all controls are visible and properly aligned\n   - Check that dark theme styling is consistently applied\n   - Ensure proper spacing between all elements (16px between sections, 8px between elements)\n\n3. Functionality testing:\n   - Verify all controls work as expected after consolidation\n   - Test page navigation controls\n   - Test audio controls\n   - Verify mistake counter updates correctly\n   - Test all buttons and interactive elements\n\n4. Responsive testing:\n   - Test on various screen sizes (desktop, tablet, mobile)\n   - Verify layout adjusts appropriately on smaller screens\n   - Ensure all functionality remains accessible on mobile devices\n\n5. Accessibility testing:\n   - Verify proper tab order through all controls\n   - Test with screen readers to ensure all controls are properly labeled\n   - Check keyboard navigation works correctly\n   - Verify sufficient color contrast for all elements\n\n6. Cross-browser testing:\n   - Test in Chrome, Firefox, Safari, and Edge\n   - Verify consistent appearance and functionality across browsers",
+        "status": "done",
+        "dependencies": [
+          4,
+          5
+        ],
+        "priority": "high",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-25T05:38:57.304Z",
-      "updated": "2025-06-25T06:30:30.413Z",
+      "updated": "2025-06-25T11:31:16.783Z",
       "description": "Tasks for master context"
     }
   }
