@@ -6,6 +6,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
   const [error, setError] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [mistakes, setMistakes] = useState([]); // array of word IDs
+  const [hoveredAyah, setHoveredAyah] = useState(null); // Track which ayah is being hovered
 
   // Utility: count mistakes
   const mistakeCount = mistakes.length;
@@ -50,6 +51,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
           const savedMistakes = saved ? JSON.parse(saved) : [];
           setMistakes(savedMistakes);
           setRevealed(false); // hide page on page change
+          setHoveredAyah(null); // reset hover state
           
           // Notify parent component about initial mistakes
           stableOnMistakesChange(savedMistakes);
@@ -69,7 +71,10 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
     };
   }, [pageNumber]); // Only depend on pageNumber
 
-  const toggleReveal = useCallback(() => setRevealed((r) => !r), []);
+  const toggleReveal = useCallback(() => {
+    setRevealed((r) => !r);
+    setHoveredAyah(null); // Reset hover when toggling reveal
+  }, []);
 
   const toggleMistake = useCallback((wordId) => {
     setMistakes((prev) =>
@@ -80,6 +85,58 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
   }, []);
 
   const resetMistakes = useCallback(() => setMistakes([]), []);
+
+  // Handle ayah hover for preview in invisible mode
+  const handleAyahMouseEnter = useCallback((lineNumber) => {
+    if (!revealed) {
+      setHoveredAyah(lineNumber);
+    }
+  }, [revealed]);
+
+  const handleAyahMouseLeave = useCallback(() => {
+    if (!revealed) {
+      setHoveredAyah(null);
+    }
+  }, [revealed]);
+
+  // Check if a word should be visible in invisible mode (first 2-3 words of each ayah)
+  const isWordVisibleInInvisibleMode = useCallback((wordId, lineData) => {
+    if (!lineData || lineData.line_type !== 'ayah') return false;
+    
+    const firstWordId = lineData.first_word_id;
+    const wordPosition = wordId - firstWordId;
+    
+    // Show first 3 words of each ayah line
+    return wordPosition < 3;
+  }, []);
+
+  // Get word visibility and opacity
+  const getWordStyle = useCallback((wordId, lineData) => {
+    if (revealed) {
+      // Fully revealed mode
+      return {
+        opacity: 1,
+        transition: 'opacity 0.4s',
+      };
+    } else {
+      // Invisible mode
+      const isVisible = isWordVisibleInInvisibleMode(wordId, lineData);
+      const isHovered = hoveredAyah === lineData.line_number;
+      
+      let opacity = 0.1; // Very faint by default
+      
+      if (isVisible) {
+        opacity = 0.8; // First few words are more visible
+      } else if (isHovered) {
+        opacity = 0.3; // Hovered ayah shows light preview
+      }
+      
+      return {
+        opacity,
+        transition: 'opacity 0.3s ease',
+      };
+    }
+  }, [revealed, hoveredAyah, isWordVisibleInInvisibleMode]);
 
   // Keyboard shortcuts: R to reveal/hide, M to reset mistakes
   useEffect(() => {
@@ -129,6 +186,11 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
           <span style={{ marginLeft: 16, fontSize: '0.9em', color: '#888' }}>
             (Summary: {mistakeSummary})
           </span>
+          {!revealed && (
+            <span style={{ marginLeft: 16, fontSize: '0.8em', color: '#666', fontStyle: 'italic' }}>
+              Hover over lines for preview
+            </span>
+          )}
         </div>
         {pageData.pageData.map((line, idx) => {
           if (
@@ -139,70 +201,85 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
             return (
               <div
                 key={line.line_number}
-                className={`mushaf-line ${line.is_centered ? 'centered' : ''} ${revealed ? 'revealed' : 'hidden'}`}
+                className={`mushaf-line ${line.is_centered ? 'centered' : ''}`}
+                onMouseEnter={() => handleAyahMouseEnter(line.line_number)}
+                onMouseLeave={handleAyahMouseLeave}
+                style={{
+                  cursor: !revealed ? 'pointer' : 'default',
+                }}
               >
-                {line.line_type === 'surah_name' && (
-                  <span className="surah-name">Surah {line.surah_number}</span>
-                )}
-                {line.line_type === 'basmallah' && <span className="basmallah">﷽</span>}
-                {line.line_type === 'ayah' &&
-                  Array.from(
-                    { length: line.last_word_id - line.first_word_id + 1 },
-                    (_, i) => {
-                      const wordId = line.first_word_id + i;
-                      const word = pageData.wordData[wordId];
-                      const wordText = typeof word === "string" ? word : word?.text;
-                      // Get ayah marker if this is the last word in the ayah
-                      let ayahMarker = null;
-                      if (wordId === line.last_word_id && line.ayah_number) {
-                        // U+F501 is 0xF501, so add (ayah_number - 1) to 0xF501
-                        const codepoint = 0xF500 + line.ayah_number;
-                        ayahMarker = (
-                          <span className="ayah-marker" style={{ margin: '0 0.3em', fontSize: '1.2em', fontFamily: 'IndopakNastaleeq, serif' }}>
-                            {String.fromCharCode(codepoint)}
-                          </span>
-                        );
-                      }
-                      return wordText ? (
-                        <span
-                          key={wordId}
-                          data-word-id={wordId}
-                          className={`mushaf-word${mistakes.includes(wordId) ? ' mistake' : ''}`}
-                          onClick={() => toggleMistake(wordId)}
-                          style={{
-                            userSelect: 'none',
-                            textDecoration: mistakes.includes(wordId) ? 'underline wavy red' : 'none',
-                            cursor: 'pointer',
-                            opacity: revealed ? 1 : 0.2,
-                            transition: 'opacity 0.4s',
+                {Array.from(
+                  { length: line.last_word_id - line.first_word_id + 1 },
+                  (_, i) => {
+                    const wordId = line.first_word_id + i;
+                    const word = pageData.wordData[wordId];
+                    const wordText = typeof word === "string" ? word : word?.text;
+                    
+                    // Get ayah marker if this is the last word in the ayah
+                    let ayahMarker = null;
+                    if (wordId === line.last_word_id && line.ayah_number) {
+                      // U+F501 is 0xF501, so add (ayah_number - 1) to 0xF501
+                      const codepoint = 0xF500 + line.ayah_number;
+                      ayahMarker = (
+                        <span 
+                          className="ayah-marker" 
+                          style={{ 
+                            margin: '0 0.3em', 
+                            fontSize: '1.2em', 
+                            fontFamily: 'IndopakNastaleeq, serif',
+                            ...getWordStyle(wordId, line)
                           }}
                         >
-                          {wordText}
-                          {ayahMarker}
+                          {String.fromCharCode(codepoint)}
                         </span>
-                      ) : null;
+                      );
                     }
-                  )}
+                    
+                    return wordText ? (
+                      <span
+                        key={wordId}
+                        data-word-id={wordId}
+                        className={`mushaf-word${mistakes.includes(wordId) ? ' mistake' : ''}`}
+                        onClick={() => toggleMistake(wordId)}
+                        style={{
+                          userSelect: 'none',
+                          textDecoration: mistakes.includes(wordId) ? 'underline wavy red' : 'none',
+                          cursor: 'pointer',
+                          ...getWordStyle(wordId, line),
+                        }}
+                      >
+                        {wordText}
+                        {ayahMarker}
+                      </span>
+                    ) : null;
+                  }
+                )}
               </div>
             );
           } else if (line.line_type === "surah_name") {
             return (
               <div
                 key={line.line_number}
-                className={`mushaf-line ${line.is_centered ? 'centered' : ''} ${revealed ? 'revealed' : 'hidden'}`}
+                className={`mushaf-line ${line.is_centered ? 'centered' : ''}`}
+                style={{
+                  opacity: revealed ? 1 : 0.6,
+                  transition: 'opacity 0.4s',
+                }}
               >
-                {line.line_type === 'surah_name' && (
-                  <span className="surah-name">Surah {line.surah_number}</span>
-                )}
+                <span className="surah-name">Surah {line.surah_number}</span>
               </div>
             );
           } else if (line.line_type === "basmallah") {
             return (
               <div
                 key={line.line_number}
-                className={`mushaf-line ${line.is_centered ? 'centered' : ''} ${revealed ? 'revealed' : 'hidden'}`}
+                className={`mushaf-line ${line.is_centered ? 'centered' : ''}`}
+                style={{
+                  opacity: revealed ? 1 : 0.6,
+                  transition: 'opacity 0.4s',
+                }}
               >
-                {line.line_type === 'basmallah' && <span className="basmallah">﷽</span>}
+                <span className="basmallah">﷽</span>
               </div>
             );
           } else {
