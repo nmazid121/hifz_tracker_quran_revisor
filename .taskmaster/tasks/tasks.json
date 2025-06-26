@@ -455,7 +455,7 @@
         "dependencies": [
           9
         ],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
@@ -464,7 +464,7 @@
             "dependencies": [],
             "details": "Technical approach: Use libraries like csv-stringify for CSV and ExcelJS/xlsx for Excel exports. Create a service layer that handles data retrieval from the database and transforms it into the appropriate format. File format requirements: Support both .csv and .xlsx formats with proper headers, data types, and encoding (UTF-8). Include options for column selection and data filtering. Error handling strategy: Implement try/catch blocks around file operations, add logging for export failures, and provide user-friendly error messages for common issues like permission problems or disk space limitations.",
             "status": "done",
-            "testStrategy": ""
+            "testStrategy": "Backend export endpoints verified working via API testing"
           },
           {
             "id": 2,
@@ -473,7 +473,7 @@
             "dependencies": [],
             "details": "Technical approach: Implement file upload using multer or similar middleware for handling multipart/form-data. Create parsers for both CSV (using csv-parse) and Excel (using ExcelJS/xlsx) formats. Build a streaming approach for large files to prevent memory issues. File format requirements: Support .csv, .xlsx, and .xls formats. Implement template validation to ensure uploaded files match expected structure. Error handling strategy: Validate file type and size before processing, provide detailed feedback on parsing errors (line numbers, column issues), and implement partial imports where possible when errors occur.",
             "status": "done",
-            "testStrategy": ""
+            "testStrategy": "Backend import/parsing endpoints verified working"
           },
           {
             "id": 3,
@@ -484,7 +484,20 @@
             ],
             "details": "Technical approach: Create a validation pipeline that checks data types, required fields, and business rules. Implement duplicate detection using database queries or in-memory comparison. Use WebSockets or Server-Sent Events for real-time progress updates. File format requirements: Define validation rules for each field type, create a standard error report format that can be exported to users. Error handling strategy: Provide options for how to handle invalid data (skip, use default values, abort), implement transaction rollback for failed imports, and create detailed error reports showing which records failed validation and why.",
             "status": "done",
-            "testStrategy": ""
+            "testStrategy": "Backend validation and processing logic complete"
+          },
+          {
+            "id": 4,
+            "title": "Frontend Export/Import UI Implementation",
+            "description": "Create frontend user interface for export and import functionality in the Progress Dashboard",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Frontend Requirements:\n- Add Export button to ProgressDashboard with dropdown for CSV/Excel options\n- Create Import button with file upload dialog\n- Implement progress indicators for large operations\n- Add success/error notifications for export/import operations\n- Create preview dialog for import confirmation\n- Handle file download for exports\n- Display import validation errors to user\n\nTechnical Implementation:\n- Use fetch API to communicate with backend export/import endpoints\n- Implement file download using blob URLs\n- Add loading states during operations\n- Create modal dialogs for import flows\n- Style buttons to match dashboard design",
+            "status": "pending",
+            "testStrategy": "Need to implement: Export/Import buttons in dashboard, file upload UI, progress indicators, and success/error handling"
           }
         ]
       },
