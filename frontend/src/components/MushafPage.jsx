@@ -99,14 +99,22 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
     }
   }, [revealed]);
 
-  // Check if a word should be visible in invisible mode (first 2-3 words of each ayah)
-  const isWordVisibleInInvisibleMode = useCallback((wordId, lineData) => {
-    if (!lineData || lineData.line_type !== 'ayah') return false;
+  // Check if a word should be visible in invisible mode (first 2-3 words of ONLY the first ayah on the page)
+  const isWordVisibleInInvisibleMode = useCallback((wordId, lineData, pageData) => {
+    if (!lineData || lineData.line_type !== 'ayah' || !pageData) return false;
+    
+    // Find the first ayah line on the page
+    const firstAyahLine = pageData.pageData.find(line => line.line_type === 'ayah');
+    
+    // Only show words from the very first ayah line
+    if (!firstAyahLine || lineData.line_number !== firstAyahLine.line_number) {
+      return false;
+    }
     
     const firstWordId = lineData.first_word_id;
     const wordPosition = wordId - firstWordId;
     
-    // Show first 3 words of each ayah line
+    // Show first 3 words of only the first ayah
     return wordPosition < 3;
   }, []);
 
@@ -120,13 +128,13 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
       };
     } else {
       // Invisible mode
-      const isVisible = isWordVisibleInInvisibleMode(wordId, lineData);
+      const isVisible = isWordVisibleInInvisibleMode(wordId, lineData, pageData);
       const isHovered = hoveredAyah === lineData.line_number;
       
-      let opacity = 0.1; // Very faint by default
+      let opacity = 0.05; // Very faint by default (even more invisible)
       
       if (isVisible) {
-        opacity = 0.8; // First few words are more visible
+        opacity = 0.8; // First few words of first ayah are more visible
       } else if (isHovered) {
         opacity = 0.3; // Hovered ayah shows light preview
       }
@@ -136,7 +144,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
         transition: 'opacity 0.3s ease',
       };
     }
-  }, [revealed, hoveredAyah, isWordVisibleInInvisibleMode]);
+  }, [revealed, hoveredAyah, isWordVisibleInInvisibleMode, pageData]);
 
   // Keyboard shortcuts: R to reveal/hide, M to reset mistakes
   useEffect(() => {
