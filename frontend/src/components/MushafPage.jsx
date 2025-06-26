@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const MushafPage = ({ pageNumber }) => {
+const MushafPage = ({ pageNumber, onMistakesChange }) => {
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,8 +16,12 @@ const MushafPage = ({ pageNumber }) => {
   useEffect(() => {
     if (pageData) {
       sessionStorage.setItem(`mistakes_page_${pageNumber}`, JSON.stringify(mistakes));
+      // Notify parent component about mistakes change
+      if (onMistakesChange) {
+        onMistakesChange(mistakes);
+      }
     }
-  }, [mistakes, pageNumber, pageData]);
+  }, [mistakes, pageNumber, pageData, onMistakesChange]);
 
   // Restore mistakes on page load
   useEffect(() => {
@@ -29,14 +33,20 @@ const MushafPage = ({ pageNumber }) => {
         setPageData(data);
         setLoading(false);
         const saved = sessionStorage.getItem(`mistakes_page_${pageNumber}`);
-        setMistakes(saved ? JSON.parse(saved) : []);
+        const savedMistakes = saved ? JSON.parse(saved) : [];
+        setMistakes(savedMistakes);
         setRevealed(false); // hide page on page change
+        
+        // Notify parent component about initial mistakes
+        if (onMistakesChange) {
+          onMistakesChange(savedMistakes);
+        }
       })
       .catch((err) => {
         setError('Failed to load page data');
         setLoading(false);
       });
-  }, [pageNumber]);
+  }, [pageNumber, onMistakesChange]);
 
   const toggleReveal = () => setRevealed((r) => !r);
 
@@ -62,6 +72,21 @@ const MushafPage = ({ pageNumber }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Expose methods to parent component
+  useEffect(() => {
+    // This allows parent components to access these methods if needed
+    window.mushafPageMethods = {
+      getMistakes: () => mistakes,
+      resetMistakes,
+      toggleReveal,
+      isRevealed: () => revealed
+    };
+    
+    return () => {
+      delete window.mushafPageMethods;
+    };
+  }, [mistakes, revealed]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
