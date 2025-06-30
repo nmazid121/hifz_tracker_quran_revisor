@@ -3,6 +3,7 @@ import MushafPage from './components/MushafPage';
 import ControlsBar from './components/ControlsBar';
 import RecitationRating from './components/RecitationRating';
 import ProgressDashboard from './components/ProgressDashboard';
+import ConnectionStatus from './components/ConnectionStatus';
 import sessionSubmissionService from './services/SessionSubmissionService';
 import './App.css';
 
@@ -139,6 +140,9 @@ function App() {
 
   return (
     <div className="App">
+      {/* Connection Status Indicator */}
+      <ConnectionStatus />
+      
       {/* Submit Message Display */}
       {submitMessage && (
         <div className={`submit-message ${submitMessageType}`}>

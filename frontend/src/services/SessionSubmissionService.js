@@ -79,33 +79,50 @@ class SessionSubmissionService {
       return this.queueForOfflineSubmission(sessionData);
     }
 
-    try {
-      const response = await fetch(`${this.apiBaseUrl}/recitations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sessionData)
-      });
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    const attemptSubmit = async () => {
+      try {
+        const response = await fetch(`${this.apiBaseUrl}/recitations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sessionData)
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
 
-      const result = await response.json();
-      return {
-        success: true,
-        data: result,
-        message: 'Session submitted successfully'
-      };
-    } catch (error) {
-      // If submission fails, queue for retry
-      if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        return this.queueForOfflineSubmission(sessionData);
+        const result = await response.json();
+        return {
+          success: true,
+          data: result,
+          message: 'Session submitted successfully'
+        };
+      } catch (error) {
+        // If it's a connection error and we haven't exceeded max retries, try again
+        if ((error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('ECONNREFUSED')) && retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Submission failed, retrying... (${retryCount}/${maxRetries})`);
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          return attemptSubmit();
+        }
+        
+        // If all retries failed or it's not a connection error, queue for offline
+        if (error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('ECONNREFUSED')) {
+          return this.queueForOfflineSubmission(sessionData);
+        }
+        throw error;
       }
-      throw error;
-    }
+    };
+    
+    return attemptSubmit();
   }
 
   // Offline support

@@ -31,37 +31,54 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
   // Restore mistakes on page load - ONLY when pageNumber changes
   useEffect(() => {
     let isCancelled = false;
+    let retryCount = 0;
+    const maxRetries = 3;
     
     const loadPageData = async () => {
       setLoading(true);
       setError(null);
       
-      try {
-        const response = await fetch(`/api/quran/page/${pageNumber}`);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!isCancelled) {
-          setPageData(data);
-          setLoading(false);
-          const saved = sessionStorage.getItem(`mistakes_page_${pageNumber}`);
-          const savedMistakes = saved ? JSON.parse(saved) : [];
-          setMistakes(savedMistakes);
-          setRevealed(false); // hide page on page change
-          setHoveredAyah(null); // reset hover state
+      const attemptLoad = async () => {
+        try {
+          const response = await fetch(`/api/quran/page/${pageNumber}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
           
-          // Notify parent component about initial mistakes
-          stableOnMistakesChange(savedMistakes);
+          const data = await response.json();
+          
+          if (!isCancelled) {
+            setPageData(data);
+            setLoading(false);
+            const saved = sessionStorage.getItem(`mistakes_page_${pageNumber}`);
+            const savedMistakes = saved ? JSON.parse(saved) : [];
+            setMistakes(savedMistakes);
+            setRevealed(false); // hide page on page change
+            setHoveredAyah(null); // reset hover state
+            
+            // Notify parent component about initial mistakes
+            stableOnMistakesChange(savedMistakes);
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            // If it's a connection error and we haven't exceeded max retries, try again
+            if ((err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED')) && retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Connection failed, retrying... (${retryCount}/${maxRetries})`);
+              setError(`Connection issue, retrying... (${retryCount}/${maxRetries})`);
+              
+              // Wait before retrying (exponential backoff)
+              setTimeout(attemptLoad, 1000 * retryCount);
+              return;
+            }
+            
+            setError(`Failed to load page data${retryCount > 0 ? ` after ${retryCount} retries` : ''}: ${err.message}`);
+            setLoading(false);
+          }
         }
-      } catch (err) {
-        if (!isCancelled) {
-          setError('Failed to load page data');
-          setLoading(false);
-        }
-      }
+      };
+      
+      attemptLoad();
     };
 
     loadPageData();

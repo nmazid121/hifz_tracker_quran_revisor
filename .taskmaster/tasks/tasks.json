@@ -147,7 +147,7 @@
         "id": 4,
         "title": "Implement Page Reveal and Mistake Marking",
         "description": "Add functionality to toggle visibility of Mushaf page content and allow users to mark/unmark individual words as mistakes.",
-        "details": "1. Implement reveal/hide functionality:\n   - Add toggle button to show/hide page content\n   - Create CSS transitions for smooth reveal\n   - Store visibility state in component\n2. Implement mistake marking:\n   - Make Word components clickable\n   - Toggle underline style on click\n   - Track marked words in state array\n   - Add visual indicator for marked mistakes\n3. Create utility functions:\n   - Reset all mistakes\n   - Count total mistakes\n   - Generate mistake summary\n4. Implement keyboard shortcuts for common actions\n5. Add persistence of mistake data for session submission",
+        "details": "1. Implement reveal/hide functionality:\n   - Add toggle button to show/hide page content\n   - Create CSS transitions for smooth reveal\n   - Store visibility state in component\n2. Implement mistake marking:\n   - Make Word components clickable\n   - Toggle underline style on click\n   - Track marked words in state array\n   - Add visual indicator for marked mistakes\n3. Create utility functions:\n   - Reset all mistakes\n   - Count total mistakes\n   - Generate mistake summary\n4. Implement keyboard shortcuts for common actions\n5. Add persistence of mistake data for session submission\n\n**ENHANCEMENT - Invisible Mode with Smart Visibility (Completed 2025-01-28):**\n6. Enhanced invisible mode functionality:\n   - Show first 3 words of only the first ayah on page as memory prompt\n   - All other ayahs remain hidden (opacity: 0.05) until hovered\n   - Hover preview shows light opacity (0.3) for any ayah line\n   - Surah names and Basmallah partially visible for reference\n   - Smooth transitions (0.3s) for all opacity changes\n   - Visual hint text \"Hover over lines for preview\" in invisible mode\n   - Perfect for Hifz practice: minimal prompting with on-demand hints",
         "testStrategy": "Test reveal/hide functionality works correctly with proper animations. Verify words can be marked/unmarked as mistakes with correct visual feedback. Test mistake counting and summary generation. Ensure mistake data persists correctly for submission.",
         "priority": "high",
         "dependencies": [
@@ -255,7 +255,7 @@
         "dependencies": [
           4
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -263,8 +263,8 @@
             "description": "Implement a rating selection component with visual indicators and tooltips",
             "dependencies": [],
             "details": "Create a rating selection component that allows users to select a rating value. Include the following:\n- Visual indicators (stars, numbers, or other appropriate UI elements)\n- Tooltips that appear on hover to explain each rating level\n- Proper state management to track selected rating\n- Accessibility considerations (keyboard navigation, ARIA attributes)\n- Visual feedback when a rating is selected\n- Mobile-responsive design for touch interactions\n- Integration with form submission logic",
-            "status": "pending",
-            "testStrategy": ""
+            "status": "done",
+            "testStrategy": "Completed: Created RecitationRating.jsx with 5-level rating system (Perfect, Good, Okay, Bad, Rememorize) with color-coded options and descriptions. Includes notes input with 500-character limit and validation, session summary view with confirmation dialog, and comprehensive CSS styling."
           },
           {
             "id": 2,
@@ -274,8 +274,8 @@
               1
             ],
             "details": "Create a notes input component with validation and session summary view. Include the following:\n- Text area for user notes with appropriate styling\n- Character count and/or word limit indicators\n- Form validation (required field, minimum length, etc.)\n- Error messaging for invalid inputs\n- Session summary view that displays both the rating and notes\n- State management to store and retrieve notes content\n- Integration with the rating component for a complete form submission\n- Responsive design considerations for different screen sizes",
-            "status": "pending",
-            "testStrategy": ""
+            "status": "done",
+            "testStrategy": "Completed: Integrated with rating component, includes comprehensive form validation, character counter, and session summary display. Successfully tested with various input combinations."
           }
         ]
       },
@@ -290,7 +290,7 @@
           1,
           2
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -309,7 +309,7 @@
               1
             ],
             "details": "Technical Requirements:\n- Implement endpoints for recitation upload, retrieval, update, and deletion\n- Create endpoints for user management related to recitations\n- Implement pagination and sorting for list endpoints\n- Add authentication and authorization middleware\n- Implement rate limiting for API endpoints\n- Add logging for all database operations\n\nAPI Contracts:\n- POST /recitations - Create new recitation\n- GET /recitations - List recitations with filters\n- GET /recitations/:id - Get specific recitation\n- PUT /recitations/:id - Update recitation\n- DELETE /recitations/:id - Delete recitation\n- Document request/response formats with examples\n\nTesting Approach:\n- Unit tests for each endpoint\n- Integration tests for API flows\n- Load testing for concurrent requests\n- Authentication/authorization tests\n- Error handling tests",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -321,7 +321,7 @@
               2
             ],
             "details": "Technical Requirements:\n- Create input validation middleware for all API endpoints\n- Implement advanced filtering for recitation queries (by surah, date, quality)\n- Develop data sanitization utilities\n- Create scheduled backup system for database\n- Implement data export functionality (JSON, CSV)\n- Add data integrity checks and repair utilities\n\nAPI Contracts:\n- GET /recitations/export - Export recitation data\n- POST /admin/backup - Trigger manual backup\n- GET /recitations/search - Advanced search endpoint\n- Document validation rules and error codes\n\nTesting Approach:\n- Unit tests for validation rules\n- Test filtering with complex queries\n- Verify backup and restore functionality\n- Test data export formats\n- Performance testing for large datasets\n- Security testing for data validation",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -338,7 +338,7 @@
           6,
           7
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -346,7 +346,7 @@
             "description": "Create a service to collect, validate, and format session data before submission",
             "dependencies": [],
             "details": "Technical Approach: Implement a SessionDataService that handles data collection from various input sources, performs initial validation, and formats data according to API requirements. Use TypeScript interfaces for data models and implement transformation functions.\n\nError Handling: Implement field-level validation with descriptive error messages. Add data sanitization to prevent malformed inputs. Create recovery mechanisms for partially completed forms.\n\nTesting Scenarios: Unit tests for data transformation functions, validation logic tests with valid/invalid inputs, integration tests with mock form submissions, and boundary testing for all input fields.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -357,7 +357,7 @@
               1
             ],
             "details": "Technical Approach: Create a SubmissionController that orchestrates the submission process, including pre-submission validation, API communication, and response handling. Implement a feedback system using toast notifications or inline messages. Add loading states and progress indicators.\n\nError Handling: Implement API error handling with retry logic, validation error aggregation and display, and graceful degradation for network issues. Create user-friendly error messages mapped from technical errors.\n\nTesting Scenarios: E2E tests for the complete submission flow, API integration tests with mocked responses, UI tests for feedback components, and stress testing with large data sets.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -369,7 +369,7 @@
               2
             ],
             "details": "Technical Approach: Develop an OfflineQueueService using IndexedDB for storage. Implement background sync with the ServiceWorker API. Create a queue management interface for users to view/manage pending submissions. Use the NetworkInformation API to detect connectivity changes.\n\nError Handling: Implement conflict resolution for submissions made offline that conflict with server state. Add storage quota management and data expiration policies. Create recovery mechanisms for failed sync attempts.\n\nTesting Scenarios: Offline/online transition tests, queue persistence tests across page reloads, conflict resolution tests with simulated server conflicts, and storage limit tests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -382,7 +382,7 @@
               3
             ],
             "details": "Technical Approach: Implement a SessionHistoryService to fetch and display past submissions. Create a session continuation mechanism that allows users to resume incomplete submissions. Add filtering and search capabilities for the history view. Implement data caching for improved performance.\n\nError Handling: Handle missing or corrupted session data with fallback mechanisms. Implement version control for session data format changes. Create data migration utilities for older session formats.\n\nTesting Scenarios: History retrieval and display tests, session continuation flow tests, cache invalidation tests, and performance testing for large history datasets.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -397,7 +397,7 @@
         "dependencies": [
           7
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -405,7 +405,7 @@
             "description": "Implement the core table/grid component with configurable columns for the progress dashboard",
             "dependencies": [],
             "details": "Create a reusable table component that supports dynamic column configuration. Implement column resizing, reordering, and visibility toggles. Define data models and interfaces for the grid structure. Set up the basic rendering pipeline with virtualization for performance with large datasets. Include column header components with appropriate styling. Implement theming support for the grid to match application design system. Add accessibility features including keyboard navigation and ARIA attributes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -416,7 +416,7 @@
               1
             ],
             "details": "Implement column sorting with multi-column sort capability. Create filter components for different data types (text, number, date, etc.). Add filter persistence and reset functionality. Optimize filter operations for performance with debouncing and memoization. Implement server-side sorting/filtering integration for large datasets. Create visual indicators for active sorts and filters. Design and implement filter panel UI with intuitive controls. Add ability to save and load filter presets.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -427,7 +427,7 @@
               1
             ],
             "details": "Create editable cell components for different data types (text, number, select, etc.). Implement edit mode toggling with appropriate UI indicators. Add validation logic for edited values with error messaging. Implement data change tracking and dirty state management. Create save/cancel mechanisms for edits with optimistic UI updates. Add keyboard shortcuts for efficient editing. Implement cell-level permissions based on user roles. Design and implement undo/redo functionality for edits.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -440,7 +440,7 @@
               3
             ],
             "details": "Implement responsive layout adjustments for different screen sizes. Create column priority system for progressive disclosure on smaller screens. Add horizontal scrolling with fixed columns for mobile views. Implement pagination controls with configurable page sizes. Add infinite scrolling option as alternative to pagination. Optimize rendering performance for mobile devices. Ensure touch-friendly controls for mobile users. Implement state persistence for pagination settings. Add loading indicators and skeleton screens during data fetching.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -455,7 +455,7 @@
         "dependencies": [
           9
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -463,7 +463,7 @@
             "description": "Implement functionality to export data to CSV and Excel formats",
             "dependencies": [],
             "details": "Technical approach: Use libraries like csv-stringify for CSV and ExcelJS/xlsx for Excel exports. Create a service layer that handles data retrieval from the database and transforms it into the appropriate format. File format requirements: Support both .csv and .xlsx formats with proper headers, data types, and encoding (UTF-8). Include options for column selection and data filtering. Error handling strategy: Implement try/catch blocks around file operations, add logging for export failures, and provide user-friendly error messages for common issues like permission problems or disk space limitations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -472,7 +472,7 @@
             "description": "Create functionality to upload files and parse their contents for data import",
             "dependencies": [],
             "details": "Technical approach: Implement file upload using multer or similar middleware for handling multipart/form-data. Create parsers for both CSV (using csv-parse) and Excel (using ExcelJS/xlsx) formats. Build a streaming approach for large files to prevent memory issues. File format requirements: Support .csv, .xlsx, and .xls formats. Implement template validation to ensure uploaded files match expected structure. Error handling strategy: Validate file type and size before processing, provide detailed feedback on parsing errors (line numbers, column issues), and implement partial imports where possible when errors occur.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -483,7 +483,7 @@
               2
             ],
             "details": "Technical approach: Create a validation pipeline that checks data types, required fields, and business rules. Implement duplicate detection using database queries or in-memory comparison. Use WebSockets or Server-Sent Events for real-time progress updates. File format requirements: Define validation rules for each field type, create a standard error report format that can be exported to users. Error handling strategy: Provide options for how to handle invalid data (skip, use default values, abort), implement transaction rollback for failed imports, and create detailed error reports showing which records failed validation and why.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
