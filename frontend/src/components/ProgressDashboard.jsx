@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import sessionSubmissionService from '../services/SessionSubmissionService';
 
+// Custom hook for debouncing values
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 const ProgressDashboard = ({ onClose }) => {
   const [recitations, setRecitations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +28,13 @@ const ProgressDashboard = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortConfig, setSortConfig] = useState({ key: 'recitation_date', direction: 'desc' });
+  
+  // Separate state for immediate UI updates and debounced API calls
+  const [searchInputs, setSearchInputs] = useState({
+    surah_name: '',
+    page_number: ''
+  });
+  
   const [filters, setFilters] = useState({
     rating: '',
     surah_name: '',
@@ -18,6 +42,19 @@ const ProgressDashboard = ({ onClose }) => {
     date_from: '',
     date_to: ''
   });
+
+  // Debounce search inputs to avoid excessive API calls
+  const debouncedSurahName = useDebounce(searchInputs.surah_name, 500);
+  const debouncedPageNumber = useDebounce(searchInputs.page_number, 500);
+
+  // Update filters when debounced values change
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      surah_name: debouncedSurahName,
+      page_number: debouncedPageNumber
+    }));
+  }, [debouncedSurahName, debouncedPageNumber]);
 
   const ratings = ['Perfect', 'Good', 'Okay', 'Bad', 'Rememorize'];
   const ratingColors = {
@@ -33,7 +70,14 @@ const ProgressDashboard = ({ onClose }) => {
     try {
       setLoading(true);
       setError('');
-      const result = await sessionSubmissionService.fetchRecitations(filters);
+      
+      // Build query parameters including sorting
+      const queryParams = {
+        ...filters,
+        order_by: `${sortConfig.key} ${sortConfig.direction.toUpperCase()}`
+      };
+      
+      const result = await sessionSubmissionService.fetchRecitations(queryParams);
       setRecitations(result.recitations || []);
     } catch (error) {
       console.error('Error loading recitations:', error);
@@ -41,30 +85,16 @@ const ProgressDashboard = ({ onClose }) => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, sortConfig]);
 
   useEffect(() => {
     loadRecitations();
   }, [loadRecitations]);
 
-  // Sorting
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key) return recitations;
+  // Remove client-side sorting since we're now using server-side sorting
+  const sortedData = recitations;
 
-    return [...recitations].sort((a, b) => {
-      const aVal = a[sortConfig.key];
-      const bVal = b[sortConfig.key];
-
-      if (aVal === null || aVal === undefined) return 1;
-      if (bVal === null || bVal === undefined) return -1;
-
-      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [recitations, sortConfig]);
-
-  // Pagination
+  // Pagination - now working with server-sorted data
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return sortedData.slice(startIndex, startIndex + pageSize);
@@ -80,7 +110,11 @@ const ProgressDashboard = ({ onClose }) => {
   }, []);
 
   const handleFilterChange = useCallback((key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    if (key === 'surah_name' || key === 'page_number') {
+      setSearchInputs(prev => ({ ...prev, [key]: value }));
+    } else {
+      setFilters(prev => ({ ...prev, [key]: value }));
+    }
     setCurrentPage(1);
   }, []);
 
@@ -121,6 +155,39 @@ const ProgressDashboard = ({ onClose }) => {
   const handleCancelEdit = useCallback(() => {
     setEditingCell(null);
     setEditValue('');
+  }, []);
+
+  // Add delete functionality
+  const handleDelete = useCallback(async (idsToDelete) => {
+    if (!window.confirm(`Are you sure you want to delete ${idsToDelete.length} recitation(s)? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Delete each recitation
+      const deletePromises = idsToDelete.map(id => 
+        sessionSubmissionService.deleteRecitation(id)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Update local state
+      setRecitations(prev => prev.filter(rec => !idsToDelete.includes(rec.id)));
+      setSelectedRows([]);
+      
+      // Show success message briefly
+      setError('');
+      const successMessage = `Successfully deleted ${idsToDelete.length} recitation(s)`;
+      console.log(successMessage);
+      
+    } catch (error) {
+      console.error('Error deleting recitations:', error);
+      setError('Failed to delete recitations: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const handleKeyDown = useCallback((e) => {
@@ -250,7 +317,7 @@ const ProgressDashboard = ({ onClose }) => {
           <label>Page Number:</label>
           <input
             type="number"
-            value={filters.page_number}
+            value={searchInputs.page_number}
             onChange={(e) => handleFilterChange('page_number', e.target.value)}
             placeholder="Filter by page"
           />
@@ -260,7 +327,7 @@ const ProgressDashboard = ({ onClose }) => {
           <label>Surah:</label>
           <input
             type="text"
-            value={filters.surah_name}
+            value={searchInputs.surah_name}
             onChange={(e) => handleFilterChange('surah_name', e.target.value)}
             placeholder="Filter by surah"
           />
@@ -292,6 +359,10 @@ const ProgressDashboard = ({ onClose }) => {
               page_number: '',
               date_from: '',
               date_to: ''
+            });
+            setSearchInputs({
+              surah_name: '',
+              page_number: ''
             });
           }}
           className="btn-secondary"
@@ -331,6 +402,7 @@ const ProgressDashboard = ({ onClose }) => {
               <th>Prev Rating</th>
               <th>Notes</th>
               <th>Mistakes</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -363,6 +435,15 @@ const ProgressDashboard = ({ onClose }) => {
                     `${Array.isArray(record.manual_mistakes) ? record.manual_mistakes.length : 0} mistakes` 
                     : '0 mistakes'
                   }
+                </td>
+                <td>
+                  <button 
+                    onClick={() => handleDelete([record.id])}
+                    className="btn-danger btn-small"
+                    title="Delete this recitation"
+                  >
+                    🗑️
+                  </button>
                 </td>
               </tr>
             ))}
@@ -427,10 +508,7 @@ const ProgressDashboard = ({ onClose }) => {
         <div className="bulk-actions">
           <span>{selectedRows.length} row(s) selected</span>
           <button 
-            onClick={() => {
-              // TODO: Implement bulk delete
-              console.log('Bulk delete:', selectedRows);
-            }}
+            onClick={() => handleDelete(selectedRows)}
             className="btn-danger"
           >
             Delete Selected

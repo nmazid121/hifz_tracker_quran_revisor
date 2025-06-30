@@ -165,6 +165,124 @@ def get_page_data(page_number):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# New QUL-compliant API endpoint for page layout
+@app.route('/api/quran/page-layout/<int:page_number>')
+def get_page_layout(page_number):
+    """
+    QUL-compliant endpoint that returns page layout and word data
+    in the format specified by the user requirements.
+    """
+    try:
+        # Get page lines from layout database
+        lines = get_pages(page_number)
+        if not lines:
+            return jsonify({'error': 'Page not found'}), 404
+        
+        # Collect all word IDs from ayah lines
+        word_ids = []
+        for line in lines:
+            if line['line_type'] == 'ayah' and line['first_word_id'] and line['last_word_id']:
+                word_ids.extend(range(line['first_word_id'], line['last_word_id'] + 1))
+        
+        # Fetch word data from script database
+        words = get_words(word_ids) if word_ids else []
+        
+        # Create word data dictionary with word_index as key
+        word_data = {}
+        for word in words:
+            # Use 'id' as the key since that's the word index in the database
+            word_data[word['id']] = word['text']
+        
+        # Format page layout according to QUL specification
+        page_layout = []
+        for line in lines:
+            page_layout.append({
+                "line_number": line["line_number"],
+                "line_type": line["line_type"],
+                "is_centered": bool(line["is_centered"]),
+                "first_word_id": line["first_word_id"] if line["first_word_id"] not in (None, '') else None,
+                "last_word_id": line["last_word_id"] if line["last_word_id"] not in (None, '') else None,
+                "page_number": line["page_number"],
+                "surah_number": line["surah_number"] if line["surah_number"] not in (None, '') else None,
+                "ayah_number": line.get("ayah_number") if line.get("ayah_number") not in (None, '') else None
+            })
+        
+        return jsonify({
+            "pageLayout": page_layout,
+            "wordData": word_data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# New API endpoint for Surah names
+@app.route('/api/quran/surah-names')
+def get_surah_names():
+    """
+    Return a mapping of Surah numbers to names.
+    This reads from the QUL layout database to get accurate surah information.
+    """
+    try:
+        db = get_db(QUL_LAYOUT_DB)
+        
+        # Get distinct surah numbers and their names from the database
+        cur = db.execute('''
+            SELECT DISTINCT surah_number, surah_name 
+            FROM pages 
+            WHERE surah_number IS NOT NULL AND surah_number != '' 
+            ORDER BY CAST(surah_number AS INTEGER)
+        ''')
+        
+        surahs = cur.fetchall()
+        
+        # Create mapping - if surah_name is available use it, otherwise use standard names
+        surah_names = {}
+        
+        # Standard Surah names as fallback
+        standard_names = {
+            1: "Al-Fatiha", 2: "Al-Baqarah", 3: "Ali Imran", 4: "An-Nisa", 5: "Al-Maidah",
+            6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal", 9: "At-Tawbah", 10: "Yunus",
+            11: "Hud", 12: "Yusuf", 13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr",
+            16: "An-Nahl", 17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha",
+            21: "Al-Anbya", 22: "Al-Hajj", 23: "Al-Mu'minun", 24: "An-Nur", 25: "Al-Furqan",
+            26: "Ash-Shu'ara", 27: "An-Naml", 28: "Al-Qasas", 29: "Al-Ankabut", 30: "Ar-Rum",
+            31: "Luqman", 32: "As-Sajdah", 33: "Al-Ahzab", 34: "Saba", 35: "Fatir",
+            36: "Ya-Sin", 37: "As-Saffat", 38: "Sad", 39: "Az-Zumar", 40: "Ghafir",
+            41: "Fussilat", 42: "Ash-Shuraa", 43: "Az-Zukhruf", 44: "Ad-Dukhan", 45: "Al-Jathiyah",
+            46: "Al-Ahqaf", 47: "Muhammad", 48: "Al-Fath", 49: "Al-Hujurat", 50: "Qaf",
+            51: "Adh-Dhariyat", 52: "At-Tur", 53: "An-Najm", 54: "Al-Qamar", 55: "Ar-Rahman",
+            56: "Al-Waqi'ah", 57: "Al-Hadid", 58: "Al-Mujadila", 59: "Al-Hashr", 60: "Al-Mumtahanah",
+            61: "As-Saff", 62: "Al-Jumu'ah", 63: "Al-Munafiqun", 64: "At-Taghabun", 65: "At-Talaq",
+            66: "At-Tahrim", 67: "Al-Mulk", 68: "Al-Qalam", 69: "Al-Haqqah", 70: "Al-Ma'arij",
+            71: "Nuh", 72: "Al-Jinn", 73: "Al-Muzzammil", 74: "Al-Muddaththir", 75: "Al-Qiyamah",
+            76: "Al-Insan", 77: "Al-Mursalat", 78: "An-Naba", 79: "An-Nazi'at", 80: "Abasa",
+            81: "At-Takwir", 82: "Al-Infitar", 83: "Al-Mutaffifin", 84: "Al-Inshiqaq", 85: "Al-Buruj",
+            86: "At-Tariq", 87: "Al-A'la", 88: "Al-Ghashiyah", 89: "Al-Fajr", 90: "Al-Balad",
+            91: "Ash-Shams", 92: "Al-Layl", 93: "Ad-Duhaa", 94: "Ash-Sharh", 95: "At-Tin",
+            96: "Al-Alaq", 97: "Al-Qadr", 98: "Al-Bayyinah", 99: "Az-Zalzalah", 100: "Al-Adiyat",
+            101: "Al-Qari'ah", 102: "At-Takathur", 103: "Al-Asr", 104: "Al-Humazah", 105: "Al-Fil",
+            106: "Quraysh", 107: "Al-Ma'un", 108: "Al-Kawthar", 109: "Al-Kafirun", 110: "An-Nasr",
+            111: "Al-Masad", 112: "Al-Ikhlas", 113: "Al-Falaq", 114: "An-Nas"
+        }
+        
+        # Build the result using database data where available, fallback to standard names
+        for surah in surahs:
+            surah_num = int(surah['surah_number'])
+            if surah['surah_name'] and surah['surah_name'].strip():
+                surah_names[str(surah_num)] = surah['surah_name'].strip()
+            else:
+                surah_names[str(surah_num)] = standard_names.get(surah_num, f"Surah {surah_num}")
+        
+        # Fill in any missing surahs with standard names
+        for i in range(1, 115):
+            if str(i) not in surah_names:
+                surah_names[str(i)] = standard_names.get(i, f"Surah {i}")
+        
+        return jsonify(surah_names)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/quran/juz/<int:juz_number>')
 def get_juz_data(juz_number):
     try:
