@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 
 const MushafPage = ({ pageNumber, onMistakesChange }) => {
   const [pageData, setPageData] = useState(null);
+  const [surahNames, setSurahNames] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [revealed, setRevealed] = useState(false);
@@ -19,6 +20,24 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
       onMistakesChange(newMistakes);
     }
   }, [onMistakesChange]);
+
+  // Fetch surah names once on component mount
+  useEffect(() => {
+    const fetchSurahNames = async () => {
+      try {
+        const response = await fetch('/api/quran/surah-names');
+        if (response.ok) {
+          const names = await response.json();
+          setSurahNames(names);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch surah names:', error);
+        // Continue without surah names if fetch fails
+      }
+    };
+    
+    fetchSurahNames();
+  }, []);
 
   // Persist mistakes in sessionStorage per page
   useEffect(() => {
@@ -282,6 +301,11 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
               </div>
             );
           } else if (line.line_type === "surah_name") {
+            // Get surah name from the fetched data
+            const surahName = surahNames && surahNames[line.surah_number.toString()] 
+              ? surahNames[line.surah_number.toString()]
+              : `Surah ${line.surah_number}`;
+            
             return (
               <div
                 key={line.line_number}
@@ -291,7 +315,7 @@ const MushafPage = ({ pageNumber, onMistakesChange }) => {
                   transition: 'opacity 0.4s',
                 }}
               >
-                <span className="surah-name">Surah {line.surah_number}</span>
+                <span className="surah-name">{surahName}</span>
               </div>
             );
           } else if (line.line_type === "basmallah") {

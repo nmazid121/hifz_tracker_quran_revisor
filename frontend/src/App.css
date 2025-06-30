@@ -41,10 +41,10 @@
   color: #888;
 }
 
-/* Re-enabled custom Quran font for authentic Mushaf rendering */
+/* Re-enabled custom Quran font for authentic Mushaf rendering - using local QUL font */
 @font-face {
   font-family: 'IndopakNastaleeq';
-  src: url('https://static-cdn.tarteel.ai/qul/fonts/nastaleeq/Hanafi/normal-v4.2.2/with-waqf-lazmi/font.ttf');
+  src: url('/font.ttf');
   font-display: swap;
 }
 
